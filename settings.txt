@@ -1,0 +1,4 @@
+subtitles 0
+soundFX 100
+soundMaster 100
+soundMusic 100
