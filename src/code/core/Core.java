@@ -75,7 +75,7 @@ public class Core extends JPanel {
   private int smallScreenX = (int)DEFAULT_SCREEN_SIZE.x;
   private int smallScreenY = (int)DEFAULT_SCREEN_SIZE.y;
 
-  private static final double TICKS_PER_SECOND = 60;
+  private static final double TICKS_PER_SECOND = 30;
   private static final double MILLISECONDS_PER_TICK = 1000/TICKS_PER_SECOND;
 
   private long pFTime = System.currentTimeMillis();
