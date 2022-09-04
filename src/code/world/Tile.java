@@ -36,7 +36,6 @@ public class Tile
 
   /** Whther there's a solid, airtight, wall to the [Left, Right, Up, Down] */
   private boolean[] walled = {false, false, false, false};
-  private boolean pressurised = false;
   private float airPressure = 0f;
 
   private Tile[][] nb;
