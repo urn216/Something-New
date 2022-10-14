@@ -103,7 +103,7 @@ public class Scene
     return player;
   }
 
-  public Tile getTile(Vector2 p) {return map[(int)(p.x/Tile.TILE_SIZE)+mapSX/2][(int)(p.y/Tile.TILE_SIZE)+mapSY/2];}
+  public Tile getTile(Vector2 p) {return map[(int)(p.x/Tile.TILE_SIZE+mapSX/2)][(int)(p.y/Tile.TILE_SIZE+mapSY/2)];}
 
   public void addBullet(Bullet b) {
     bullets.add(b);

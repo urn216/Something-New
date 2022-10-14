@@ -1,0 +1,2 @@
+BG 1920 1080 Space.png false
+decal 32 32 test.png true

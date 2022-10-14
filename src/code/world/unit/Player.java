@@ -8,8 +8,7 @@ import code.world.Collider;
 
 import code.world.fixed.WorldObject;
 
-import code.world.inv.Gun;
-import code.world.inv.GunLauncher;
+import code.world.inv.*;
 
 import java.util.*;
 import java.awt.event.KeyEvent;
@@ -37,9 +36,10 @@ public class Player extends Unit
 
     collider = new Collider(new Vector2(), size, true, this);
 
-    //held = new Gun(this, 40, 1, 30, 5, 15, 0.96, true);
-    //held = new Gun(this, 40, 1, 30, 5, 15, 0.96, true, new Gun(this, 40, 10, 5, 30, 10, 0.8, false));
-    held = new Gun(this, 40, 1, 30, 5, 30, 0.96, true, new GunLauncher(this, new ItemUnit(0, 0, null), 20, 1, 30, 15, 0.96, true));
+    // held = new Gun(this, 40, 1, 30, 5, 15, 0.96, true);
+    // held = new Gun(this, 40, 1, 30, 5, 15, 0.96, true, new Gun(this, 40, 10, 5, 30, 10, 0.8, false));
+    // held = new Gun(this, 40, 1, 30, 5, 30, 0.96, true, new GunLauncher(this, new ItemUnit(0, 0, null), 20, 1, 30, 15, 0.96, true));
+    held = new BuildTool(this);
   }
 
   public void input(boolean[] keys, boolean[] mouse, Vector2 mousePos) {

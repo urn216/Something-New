@@ -9,9 +9,7 @@ import code.world.unit.Unit;
 /**
 * Gun class
 */
-public class GunLauncher implements Item {
-
-  private RigidBody parent;
+public class GunLauncher extends Item {
 
   private final Item secondary;
 
