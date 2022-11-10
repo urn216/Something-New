@@ -35,8 +35,8 @@ public class Tile
   private List<Bullet> bullets = new ArrayList<Bullet>();
 
   /** Whther there's a solid, airtight, wall to the [Left, Right, Up, Down] */
-  private boolean[] walled = {false, false, false, false};
-  private float airPressure = 0f;
+  // private boolean[] walled = {false, false, false, false};
+  // private float airPressure = 0f;
 
   private Tile[][] nb;
 

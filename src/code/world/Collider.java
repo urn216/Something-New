@@ -4,9 +4,6 @@ import code.math.MathHelp;
 import code.math.Ray;
 import code.math.Vector2;
 
-import code.world.Collider;
-import code.world.RigidBody;
-
 //import java.util.*;
 /**
 * Collider class
