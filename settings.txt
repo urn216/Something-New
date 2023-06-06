@@ -1,4 +1,5 @@
-subtitles 0
-soundFX 100
+fullScreen true
 soundMaster 100
+soundFX 100
 soundMusic 100
+subtitles 0

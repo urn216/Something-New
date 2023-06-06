@@ -2,10 +2,9 @@ package code.world.unit;
 
 import code.core.Scene;
 
-import code.math.Vector2;
+import mki.math.vector.Vector2;
 
 import code.world.Collider;
-
 import code.world.fixed.WorldObject;
 
 import code.world.inv.Gun;
@@ -31,14 +30,13 @@ public class TestAI extends Unit
     position = new Vector2(X, Y);
 
     triggering = new ArrayList<WorldObject>();
-    this.size = 16;
     this.scene = scene;
-    this.hitPoints = size*10;
+    this.hitPoints = 160;
     walkF = 100;
     m = 100;
     vMax = 4;
 
-    collider = new Collider(new Vector2(), size, true, this);
+    this.collider = new Collider.Round(new Vector2(), 8, true, this);
 
     col = Color.getHSBColor((float)Math.random(), 1f, 0.5f);
     held = new Gun(this, 40, 1, 30, 5, 30, 0.96, true, new GunLauncher(this, new ItemUnit(0, 0, null), 20, 1, 30, 15, 0.96, true));
@@ -52,7 +50,7 @@ public class TestAI extends Unit
     }
 
     if (heldCool1 <= 0) {
-      held.primeUse(direction.add(position));
+      held.primeUse(position.add(direction));
       heldCool1 = held.getCooldown();
     }
 

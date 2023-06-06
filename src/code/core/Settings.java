@@ -1,6 +1,6 @@
 package code.core;
 
-import code.math.IOHelp;
+import mki.io.FileIO;
 
 import java.util.List;
 import java.util.SortedMap;
@@ -9,70 +9,189 @@ import java.util.TreeMap;
 public class Settings {
   private static final String LOCATION = "../settings.txt";
 
-  private final SortedMap<String, Integer> settings = new TreeMap<String, Integer>();
+  private static final String[] DEFAULT_SETTINGS = {
+    "fullScreen" , " " + "true" + "\n",
+    "soundMaster", " " + 100    + "\n",
+    "soundFX",     " " + 100    + "\n",
+    "soundMusic",  " " + 100    + "\n",
+    "subtitles",   " " + 0      + "\n"
+  };
+
+  private final String fileName;
+
+  private final String[] defaults;
+
+  private final SortedMap<String, String> settings = new TreeMap<String, String>();
 
   private boolean changed = false;
 
+  /**
+   * Initialises the user-defined settings for the program
+   */
   public Settings() {
+    this.fileName = LOCATION;
+    this.defaults = DEFAULT_SETTINGS;
     revertChanges();
   }
 
-  public Integer getSetting(String name) {
+  /**
+   * Initialises the user-defined settings for the program
+   */
+  public Settings(String fileName, String... settings) {
+    this.fileName = "../" + fileName + ".txt";
+    this.defaults = settings;
+    revertChanges();
+  }
+
+  /**
+   * Gets the current {@code String} value associated with the desired setting
+   * 
+   * @param name the name of the setting to retrieve the value of
+   * 
+   * @return the value associated with the desired setting
+   */
+  public String getStringSetting(String name) {
     return settings.get(name);
   }
 
-  public void setSetting(String name, Integer value) {
-    settings.replace(name, value);
-    changed = true;
+  /**
+   * Sets a given {@code String} setting to the desired value
+   * 
+   * @param name the name of the setting to alter
+   * @param value the value to set the setting to
+   */
+  public void setStringSetting(String name, String value) {
+    if (!value.equals(settings.replace(name, "" + value))) changed = true;
   }
 
-  public Boolean getBoolSetting(String name) {
-    return settings.get(name) == 0 ? false : true;
+  /**
+   * Gets the current {@code int} value associated with the desired setting
+   * 
+   * @param name the name of the setting to retrieve the value of
+   * 
+   * @return the value associated with the desired setting
+   */
+  public int getIntSetting(String name) {
+    return Integer.parseInt(settings.get(name));
   }
 
-  public void setBoolSetting(String name, Boolean value) {
-    settings.replace(name, value ? 1 : 0);
-    changed = true;
+  /**
+   * Sets a given {@code int} setting to the desired value
+   * 
+   * @param name the name of the setting to alter
+   * @param value the value to set the setting to
+   */
+  public void setIntSetting(String name, int value) {
+    if (value != Integer.parseInt(settings.replace(name, "" + value))) changed = true;
   }
 
+  /**
+   * Gets the current {@code double} value associated with the desired setting
+   * 
+   * @param name the name of the setting to retrieve the value of
+   * 
+   * @return the value associated with the desired setting
+   */
+  public double getDoubleSetting(String name) {
+    return Double.parseDouble(settings.get(name));
+  }
+
+  /**
+   * Sets a given {@code double} setting to the desired value
+   * 
+   * @param name the name of the setting to alter
+   * @param value the value to set the setting to
+   */
+  public void setDoubleSetting(String name, double value) {
+    if (value != Double.parseDouble(settings.replace(name, "" + value))) changed = true;
+  }
+
+  /**
+   * Gets the current {@code boolean} value associated with the desired setting
+   * 
+   * @param name the name of the setting to retrieve the value of
+   * 
+   * @return the value associated with the desired setting
+   */
+  public boolean getBoolSetting(String name) {
+    return Boolean.parseBoolean(settings.get(name));
+  }
+
+  /**
+   * Sets a given {@code boolean} setting to the desired value
+   * 
+   * @param name the name of the setting to alter
+   * @param value the value to set the setting to
+   */
+  public void setBoolSetting(String name, boolean value) {
+    if (value != Boolean.parseBoolean(settings.replace(name, value ? "true" : "false"))) changed = true;
+  }
+
+  /**
+   * Checks whether or not the settings have been changed from their last saved state
+   * 
+   * @return {@code true} if any settings have been changed
+   */
   public boolean hasChanged() {return changed;}
 
+  /**
+   * Saves the current settings to the user's device storage
+   */
   public void saveChanges() {
-    IOHelp.saveToFile(LOCATION, toString());
+    FileIO.saveToFile(fileName, toString());
     changed = false;
   }
 
+  /**
+   * Reverts the settings to the last saved state, or to the default state if no saved state is found
+   */
   public void revertChanges() {
-    if (!IOHelp.exists(LOCATION)) resetToDefault();
+    if (!FileIO.exists(fileName)) resetToDefault();
     else load();
   }
 
+  /**
+   * Resets the settings to their default state, and saves this default to file
+   */
   public void resetToDefault() {
-    IOHelp.saveToFile(LOCATION, ""
-    + "soundMaster " + 100 + "\n"
-    + "soundFX " + 100 + "\n"
-    + "soundMusic " + 100 + "\n"
-    + "subtitles " + 0 + "\n"
-    );
+    FileIO.saveToFile(fileName, defaults);
     load();
   }
 
+  /**
+   * Loads the currently saved settings file into the program.
+   * <p>
+   * if a setting is missing wihtin the file as it is read in, the file will be deleted and replaced with the default settings
+   */
   private void load() {
-    List<String> lines = IOHelp.readAllLines(LOCATION, false);
+    List<String> lines = FileIO.readAllLines(fileName, false);
 
     settings.clear();
 
-    for (String line : lines) {
-      String[] entry = line.split(" ", 2);
-      settings.put(entry[0], Integer.valueOf(entry[1]));
-      // System.out.println(entry[0] + ", " + Integer.valueOf(entry[1]));
+    for (int i = 0; i < lines.size(); i++) {
+      String[] entry = lines.get(i).split(" ", 2);
+
+      if (!entry[0].equals(defaults[i*2])) {
+        resetToDefault();
+        return;
+      }
+
+      if (entry[0].equals("fullScreen")) Core.WINDOW.setFullscreen(entry[1].equals("true"));//Don't like this very much. Change it at some point
+
+      settings.put(entry[0], entry[1]);
+      // System.out.println(entry[0] + ", " + entry[1]);
     }
     changed = false;
   }
 
+  /**
+   * Converts the current settings into a readable {@code String} to be saved to a file
+   * 
+   * @return a {@code String} representation of the current {@code Settings} object
+   */
   public String toString() {
     String res = "";
-    for (SortedMap.Entry<String, Integer> e : settings.entrySet()) {
+    for (SortedMap.Entry<String, String> e : settings.entrySet()) {
       res += e.getKey() + " " + e.getValue() + "\n";
     }
     return res;

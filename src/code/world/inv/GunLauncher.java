@@ -1,7 +1,8 @@
 package code.world.inv;
 
-import code.math.MathHelp;
-import code.math.Vector2;
+import mki.math.MathHelp;
+
+import mki.math.vector.Vector2;
 
 import code.world.RigidBody;
 import code.world.unit.Unit;
@@ -79,10 +80,10 @@ public class GunLauncher extends Item {
   public boolean hasSecondary() {return secondary!=null;}
 
   public void primeUse(Vector2 usePos) {
-    Vector2 position = parent.getPos();
+    Vector2 position = parent.getPos().add(parent.getVel());
     Vector2 bDir = new Vector2(usePos.x-position.x, usePos.y-position.y).unitize();
     for (int i = 0; i < projCount; i++) {
-      Vector2 bRan = Vector2.fromAngle(bDir.toAngle()+(Math.random()*2-1)*Math.PI*accuracy, Math.random()*(projVelocity/10)+projVelocity-(projVelocity/20));
+      Vector2 bRan = Vector2.fromAngle(Math.atan2(bDir.y, bDir.x)+(Math.random()*2-1)*Math.PI*accuracy, Math.random()*(projVelocity/10)+projVelocity-(projVelocity/20));
       Unit b = projectile.summon(position.x, position.y, parent.getScene());
       b.setVel(bRan.add(parent.getVel()));
       parent.getScene().addUnit(b);

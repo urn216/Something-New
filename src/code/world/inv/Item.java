@@ -1,6 +1,6 @@
 package code.world.inv;
 
-import code.math.Vector2;
+import mki.math.vector.Vector2;
 
 import code.world.RigidBody;
 

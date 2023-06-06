@@ -1,8 +1,9 @@
 package code.core;
 
-import code.math.IOHelp;
-import code.math.MathHelp;
-import code.math.Vector2;
+import mki.io.FileIO;
+
+import mki.math.MathHelp;
+import mki.math.vector.Vector2;
 
 import code.world.Bullet;
 import code.world.Camera;
@@ -33,9 +34,9 @@ public class Scene
 {
   private String title;
   //private String saveName;
-  private String prefix = "/data/scenes/";
+  private String prefix = "../data/scenes/";
 
-  private boolean inJar = true;
+  private boolean inJar = false;
 
   private int mapSX;
   private int mapSY;
@@ -63,7 +64,7 @@ public class Scene
         dest.mkdirs();
         InputStream source = Scene.class.getResourceAsStream("/data/scenes/"+title);
         if (source==null) {new GenerateRandom().save(title, saveName);}
-        else {IOHelp.copyContents(source, dest.toPath());} // This will not work! suggest loading first, then saving from play.
+        else {FileIO.copyContents(source, dest.toPath());} // This will not work! suggest loading first, then saving from play.
       }
     }
     load(true);
@@ -138,20 +139,22 @@ public class Scene
     for (Decal d : bgDecals) {
       d.draw(g, cam);
     }
+    double halfW = Core.WINDOW.screenWidth()/(2*cam.getZoom());
+    int left = Math.max((int)((cam.getPos().x-halfW)/Tile.TILE_SIZE + mapSX/2), 0);
+    int right = Math.min((int)((cam.getPos().x+halfW)/Tile.TILE_SIZE + mapSX/2)+1, mapSX);
+    double halfH = Core.WINDOW.screenHeight()/(2*cam.getZoom());
+    int top = Math.max((int)((cam.getPos().y-halfH)/Tile.TILE_SIZE + mapSY/2), 0);
+    int bottom = Math.min((int)((cam.getPos().y+halfH)/Tile.TILE_SIZE + mapSY/2)+1, mapSY);
+
     if (drawInterior) {
-      for (int i = 0; i < mapSX; i++) {
-        for (int j = 0; j < mapSY; j++) {
-          if (map[i][j].onScreen(cam)) {
-            //if (map[i][j].onScreen(player, 200, 200)) {
-            map[i][j].draw(g, cam);
-          }
+      for (int i = left; i < right; i++) {
+        for (int j = top; j < bottom; j++) {
+          map[i][j].draw(g, cam);
         }
       }
-      for (int i = 0; i < mapSX; i++) {
-        for (int j = 0; j < mapSY; j++) {
-          if (map[i][j].isVis()) {
-            map[i][j].drawDecor(g, cam);
-          }
+      for (int i = left; i < right; i++) {
+        for (int j = top; j < bottom; j++) {
+          map[i][j].drawDecor(g, cam);
         }
       }
     }
@@ -162,7 +165,7 @@ public class Scene
     List<String> allLines;
     if (init) {
       filename = prefix+title+"/Decals.txt";
-      allLines = IOHelp.readAllLines(filename, inJar);
+      allLines = FileIO.readAllLines(filename, inJar);
       for (String line : allLines) {
         Scanner scan = new Scanner(line);
         String type;
@@ -177,7 +180,7 @@ public class Scene
       }
 
       filename = prefix+title+"/Tiles.txt";
-      allLines = IOHelp.readAllLines(filename, inJar);
+      allLines = FileIO.readAllLines(filename, inJar);
       mapSX = 0;
       mapSY = allLines.size();
       if (allLines.isEmpty()) {return;}
@@ -197,7 +200,7 @@ public class Scene
       }
     }
     filename = prefix+title+"/Fixed.txt";
-    allLines = IOHelp.readAllLines(filename, inJar);
+    allLines = FileIO.readAllLines(filename, inJar);
     for (String line : allLines) {
       Scanner scan = new Scanner(line);
       String type;
@@ -212,7 +215,7 @@ public class Scene
     }
 
     filename = prefix+title+"/Units.txt";
-    allLines = IOHelp.readAllLines(filename, inJar);
+    allLines = FileIO.readAllLines(filename, inJar);
     for (String line : allLines) {
       Scanner scan = new Scanner(line);
       String type;

@@ -2,7 +2,7 @@ package code.world.fixed.dividers;
 
 import code.core.Scene;
 
-import code.math.Vector2;
+import mki.math.vector.Vector2;
 
 import code.world.Camera;
 import code.world.Collider;
@@ -51,7 +51,7 @@ public class Wall extends WorldObject
       width = thickness;
       height = Tile.TILE_SIZE+thickness;
     }
-    colliders.add(new Collider(new Vector2(), width-thickness/4, height-thickness/4, true, this));
+    colliders.add(new Collider.Square(new Vector2(), width-thickness/4, height-thickness/4, true, this));
   }
 
   public void draw(Graphics2D g, Camera cam) {
@@ -59,7 +59,8 @@ public class Wall extends WorldObject
     double conX = cam.conX();
     double conY = cam.conY();
     if (type.equals("Wall")) {
-      for (Collider collider : colliders) {
+      for (Collider coll : colliders) {
+        Collider.Square collider = (Collider.Square) coll;
         g.setColor(col);
         g.fill(new Rectangle2D.Double((collider.getPos().x-collider.getWidth()/2)*z-conX, (collider.getPos().y-collider.getHeight()/2)*z-conY, collider.getWidth()*z, collider.getHeight()*z));
         g.setColor(Color.black);

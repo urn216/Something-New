@@ -2,7 +2,7 @@ package code.world;
 
 import code.core.Scene;
 
-import code.math.Vector2;
+import mki.math.vector.Vector2;
 
 import java.util.*;
 

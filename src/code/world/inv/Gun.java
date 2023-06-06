@@ -1,7 +1,8 @@
 package code.world.inv;
 
-import code.math.MathHelp;
-import code.math.Vector2;
+import mki.math.MathHelp;
+
+import mki.math.vector.Vector2;
 
 import code.world.RigidBody;
 import code.world.Bullet;
@@ -78,7 +79,7 @@ public class Gun extends Item {
     Vector2 position = parent.getPos();
     Vector2 bDir = new Vector2(usePos.x-position.x, usePos.y-position.y).unitize();
     for (int i = 0; i < projCount; i++) {
-      Vector2 bRan = Vector2.fromAngle(bDir.toAngle()+(Math.random()*2-1)*Math.PI*accuracy, Math.random()*(projVelocity/10)+projVelocity-(projVelocity/20));
+      Vector2 bRan = Vector2.fromAngle(Math.atan2(bDir.y, bDir.x)+(Math.random()*2-1)*Math.PI*accuracy, Math.random()*(projVelocity/10)+projVelocity-(projVelocity/20));
       parent.getScene().addBullet(new Bullet(parent, bRan, projLifetime, damage));
     }
   }

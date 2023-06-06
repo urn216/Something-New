@@ -1,7 +1,6 @@
 package code.world;
 
-import code.math.Ray;
-import code.math.Vector2;
+import mki.math.vector.Vector2;
 
 import java.util.*;
 import java.awt.Graphics2D;
@@ -25,7 +24,7 @@ public class Bullet {
   */
   public Bullet(RigidBody parent, Vector2 v, int lifetime, double damage) {
     this.parent = parent;
-    this.position = parent.getPos();
+    this.position = parent.getPos().add(parent.getVel());
     this.prevPos = position;
     this.velocity = v.add(parent.getVel());
     this.lifetime = lifetime;

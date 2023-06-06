@@ -2,7 +2,7 @@ package code.world.fixed.dividers;
 
 import code.core.Scene;
 
-import code.math.Vector2;
+import mki.math.vector.Vector2;
 
 import code.world.Camera;
 import code.world.Collider;
@@ -40,35 +40,35 @@ public class Door extends WorldObject
       position = new Vector2(x*Tile.TILE_SIZE+Tile.TILE_SIZE/2, y*Tile.TILE_SIZE);
       width = Tile.TILE_SIZE+thickness;
       height = thickness;
-      colliders.add(new Collider(new Vector2(-25, 0), 24-thickness/4, height-thickness/4, true, this));
-      colliders.add(new Collider(new Vector2(25, 0), 24-thickness/4, height-thickness/4, true, this));
-      colliders.add(new Collider(new Vector2(), 28.5, height-3.5, true, this));
+      colliders.add(new Collider.Square(new Vector2(-25, 0), 24-thickness/4, height-thickness/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(25, 0), 24-thickness/4, height-thickness/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(), 28.5, height-3.5, true, this));
     }
     else if (dir.equals("Left")) {
       position = new Vector2(x*Tile.TILE_SIZE, y*Tile.TILE_SIZE+Tile.TILE_SIZE/2);
       width = thickness;
       height = Tile.TILE_SIZE+thickness;
-      colliders.add(new Collider(new Vector2(0, -25), width-thickness/4, 24-thickness/4, true, this));
-      colliders.add(new Collider(new Vector2(0, 25), width-thickness/4, 24-thickness/4, true, this));
-      colliders.add(new Collider(new Vector2(), width-3.5, 28.5, true, this));
+      colliders.add(new Collider.Square(new Vector2(0, -25), width-thickness/4, 24-thickness/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(0, 25), width-thickness/4, 24-thickness/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(), width-3.5, 28.5, true, this));
     }
     else if (dir.equals("Down")) {
       position = new Vector2(x*Tile.TILE_SIZE+Tile.TILE_SIZE/2, y*Tile.TILE_SIZE+Tile.TILE_SIZE);
       width = Tile.TILE_SIZE+thickness;
       height = thickness;
-      colliders.add(new Collider(new Vector2(-25, 0), 24-thickness/4, height-thickness/4, true, this));
-      colliders.add(new Collider(new Vector2(25, 0), 24-thickness/4, height-thickness/4, true, this));
-      colliders.add(new Collider(new Vector2(), 28.5, height-3.5, true, this));
+      colliders.add(new Collider.Square(new Vector2(-25, 0), 24-thickness/4, height-thickness/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(25, 0), 24-thickness/4, height-thickness/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(), 28.5, height-3.5, true, this));
     }
     else if (dir.equals("Right")) {
       position = new Vector2(x*Tile.TILE_SIZE+Tile.TILE_SIZE, y*Tile.TILE_SIZE+Tile.TILE_SIZE/2);
       width = thickness;
       height = Tile.TILE_SIZE+thickness;
-      colliders.add(new Collider(new Vector2(0, -25), width-thickness/4, 24-thickness/4, true, this));
-      colliders.add(new Collider(new Vector2(0, 25), width-thickness/4, 24-thickness/4, true, this));
-      colliders.add(new Collider(new Vector2(), width-3.5, 28.5, true, this));
+      colliders.add(new Collider.Square(new Vector2(0, -25), width-thickness/4, 24-thickness/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(0, 25), width-thickness/4, 24-thickness/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(), width-3.5, 28.5, true, this));
     }
-    colliders.add(new Collider(new Vector2(), Tile.TILE_SIZE/2, Tile.TILE_SIZE/2, false, this));
+    colliders.add(new Collider.Square(new Vector2(), Tile.TILE_SIZE/2, Tile.TILE_SIZE/2, false, this));
   }
 
   public void doTrigger() {
@@ -86,7 +86,7 @@ public class Door extends WorldObject
 
   public void deactivate(Unit user) {
     for (Unit i : getTile().getNBUs()) {
-      if (colliders.get(2).touching(i.getColls().get(0))!=null) {return;}
+      if (colliders.get(2).collide(i.getColls().get(0))!=null) {return;}
     }
     colliders.get(2).setSolid();
     open = false;
@@ -94,7 +94,7 @@ public class Door extends WorldObject
 
   public void toggle(Unit user) {
     for (Unit i : getTile().getNBUs()) {
-      if (colliders.get(2).touching(i.getColls().get(0))!=null) {return;}
+      if (colliders.get(2).collide(i.getColls().get(0))!=null) {return;}
     }
     colliders.get(2).toggle();
     open = !open;
@@ -105,7 +105,8 @@ public class Door extends WorldObject
     double conX = cam.conX();
     double conY = cam.conY();
     if (type.equals("Door")) {
-      for (Collider collider : colliders) {
+      for (Collider col : colliders) {
+        Collider.Square collider = (Collider.Square) col;
         if (collider.isSolid()) {
           g.setColor(Color.gray);
           g.fill(new Rectangle2D.Double((collider.getPos().x-collider.getWidth()/2)*z-conX, (collider.getPos().y-collider.getHeight()/2)*z-conY, collider.getWidth()*z, collider.getHeight()*z));
@@ -114,7 +115,7 @@ public class Door extends WorldObject
         }
       }
       if (highlight) {
-        Collider door = colliders.get(2);
+        Collider.Square door = (Collider.Square)colliders.get(2);
         g.setColor(Color.white);
         g.draw(new Rectangle2D.Double((door.getPos().x-door.getWidth()/2)*z-conX, (door.getPos().y-door.getHeight()/2)*z-conY, door.getWidth()*z, door.getHeight()*z));
       }

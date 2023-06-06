@@ -2,12 +2,13 @@ package code.world.fixed;
 
 import code.core.Scene;
 
-import code.math.Ray;
-import code.math.Vector2;
+import code.world.Ray;
+import mki.math.vector.Vector2;
 
 import code.world.Camera;
 import code.world.Collider;
 import code.world.Tile;
+import code.world.Collider.Round;
 
 import java.util.*;
 import java.awt.Graphics2D;
@@ -34,7 +35,7 @@ public class Light extends WorldObject
     origin = new Vector2(x*Tile.TILE_SIZE, y*Tile.TILE_SIZE);
     position = origin.add(Tile.TILE_SIZE/2);
     width = 10;
-    colliders.add(new Collider(new Vector2(), width, false, this));
+    colliders.add(new Collider.Round(new Vector2(), 5, false, this));
   }
 
   public void calculateShadows(List<WorldObject> objs) {
@@ -45,15 +46,14 @@ public class Light extends WorldObject
       if (obj.getPos().subtract(position).magsquare() < limit) {
         localObj.add(obj);
         obj.setColour(Color.red);
-        for (Collider col : obj.getColls()) {
-          if (!col.isSolid()) continue;
-          if (col.isRound()) {
-            continue;
-          }
-          rays.add(new Ray(position, col.getTL().subtract(position).unitize().scale(RANGE)));
-          rays.add(new Ray(position, col.getTR().subtract(position).unitize().scale(RANGE)));
-          rays.add(new Ray(position, col.getBL().subtract(position).unitize().scale(RANGE)));
-          rays.add(new Ray(position, col.getBR().subtract(position).unitize().scale(RANGE)));
+        for (Collider collider : obj.getColls()) {
+          if (!collider.isSolid() || collider instanceof Round) continue;
+          Collider.Square col = (Collider.Square) collider;
+          Vector2 pos = col.getPos();
+          rays.add(new Ray(position, pos.add(-col.getWidth()/2, -col.getHeight()/2).subtract(position).unitize().scale(RANGE)));
+          rays.add(new Ray(position, pos.add( col.getWidth()/2, -col.getHeight()/2).subtract(position).unitize().scale(RANGE)));
+          rays.add(new Ray(position, pos.add(-col.getWidth()/2,  col.getHeight()/2).subtract(position).unitize().scale(RANGE)));
+          rays.add(new Ray(position, pos.add( col.getWidth()/2,  col.getHeight()/2).subtract(position).unitize().scale(RANGE)));
         }
       }
     }

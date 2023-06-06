@@ -1,6 +1,6 @@
 package code.core;
 
-import code.math.IOHelp;
+import mki.io.FileIO;
 
 import code.world.Tile;
 
@@ -54,18 +54,18 @@ public class GenerateRandom
       }
       b.append("\n");
     }
-    IOHelp.saveToFile("../saves/"+saveName+"/scenes/"+title+"/Tiles.txt", b.toString());
-    IOHelp.saveToFile("../saves/"+saveName+"/scenes/"+title+"/Decals.txt", "BG 1920 1080 Space.png false\ndecal 32 32 test.png true");
+    FileIO.saveToFile("../saves/"+saveName+"/scenes/"+title+"/Tiles.txt", b.toString());
+    FileIO.saveToFile("../saves/"+saveName+"/scenes/"+title+"/Decals.txt", "BG 1920 1080 Space.png false\ndecal 32 32 test.png true");
     b = new StringBuilder(width*height);
     for (WorldObject obj : fixedObj) {
       b.append(obj+"\n");
     }
-    IOHelp.saveToFile("../saves/"+saveName+"/scenes/"+title+"/Fixed.txt", b.toString());
+    FileIO.saveToFile("../saves/"+saveName+"/scenes/"+title+"/Fixed.txt", b.toString());
     b = new StringBuilder(width*height);
     for (Unit unit : units) {
       b.append(unit+"\n");
     }
-    IOHelp.saveToFile("../saves/"+saveName+"/scenes/"+title+"/Units.txt", b.toString());
+    FileIO.saveToFile("../saves/"+saveName+"/scenes/"+title+"/Units.txt", b.toString());
   }
 
   public Tile[][] generate() {

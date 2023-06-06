@@ -1,12 +1,12 @@
 package code.world;
 
-import code.math.MathHelp;
-import code.math.Vector2;
+import mki.math.vector.Vector2;
+
+import mki.math.MathHelp;
 
 // import code.world.fixed.Light;
 import code.world.fixed.WorldObject;
 
-import code.world.unit.Player;
 import code.world.unit.Unit;
 
 import java.util.*;
@@ -27,7 +27,6 @@ public class Tile
   private Vector2 position;
   private Vector2 origin;
 
-  private boolean visible = true;
   private boolean active;
 
   private List<Unit> units = new ArrayList<Unit>();
@@ -50,44 +49,42 @@ public class Tile
     this.active = active != 0 ? true: false;
   }
 
-  public boolean onScreen(Camera cam) {
-    if (!active && fixedObj.isEmpty() && units.isEmpty() && bullets.isEmpty()) {
-      visible = false;
-      return visible;
-    }
-    Vector2 camPos = cam.getPos();
-    Vector2 camSize = cam.getSize();
-    if (!((camPos.x-camSize.x < position.x+TILE_SIZE/2 && camPos.y-camSize.y < position.y+TILE_SIZE/2) && (camPos.x+camSize.x > position.x-TILE_SIZE/2 && camPos.y+camSize.y > position.y-TILE_SIZE/2))) {
-      visible = false;
-      return visible;
-    }
-    visible = true;
-    if (!active) return false;
-    return visible;
-  }
+  // public boolean onScreen(Camera cam) {
+  //   if (!active && fixedObj.isEmpty() && units.isEmpty() && bullets.isEmpty()) {
+  //     visible = false;
+  //     return visible;
+  //   }
+  //   Vector2 camPos = cam.getPos();
+  //   Vector2 camSize = cam.getSize();
+  //   if (!((camPos.x-camSize.x < position.x+TILE_SIZE/2 && camPos.y-camSize.y < position.y+TILE_SIZE/2) && (camPos.x+camSize.x > position.x-TILE_SIZE/2 && camPos.y+camSize.y > position.y-TILE_SIZE/2))) {
+  //     visible = false;
+  //     return visible;
+  //   }
+  //   visible = true;
+  //   if (!active) return false;
+  //   return visible;
+  // }
 
-  public boolean onScreen(Player player, int rangeX, int rangeY) {
-    if (!active && fixedObj.isEmpty()) {
-      visible = false;
-      return false;
-    }
-    Vector2 pPos = player.getPos();
-    if ((pPos.x-rangeX < position.x+TILE_SIZE/2 && pPos.y-rangeY < position.y+TILE_SIZE/2) && (pPos.x+rangeX > position.x-TILE_SIZE/2 && pPos.y+rangeY > position.y-TILE_SIZE/2)) {
-      visible = true;
-      if (!active) return false;
-      return true;
-    }
-    visible = false;
-    return false;
-  }
+  // public boolean onScreen(Player player, int rangeX, int rangeY) {
+  //   if (!active && fixedObj.isEmpty()) {
+  //     visible = false;
+  //     return false;
+  //   }
+  //   Vector2 pPos = player.getPos();
+  //   if ((pPos.x-rangeX < position.x+TILE_SIZE/2 && pPos.y-rangeY < position.y+TILE_SIZE/2) && (pPos.x+rangeX > position.x-TILE_SIZE/2 && pPos.y+rangeY > position.y-TILE_SIZE/2)) {
+  //     visible = true;
+  //     if (!active) return false;
+  //     return true;
+  //   }
+  //   visible = false;
+  //   return false;
+  // }
 
   public void activate() {active = true;}
 
   public void deactivate() {active = false;}
 
   public void toggle() {active = !active;}
-
-  public boolean isVis() {return visible;}
 
   public boolean isActive() {return active;}
 
@@ -184,6 +181,7 @@ public class Tile
   }
 
   public void draw(Graphics2D g, Camera cam) {
+    if (!active) return;
     double z = cam.getZoom();
     double conX = cam.conX();
     double conY = cam.conY();

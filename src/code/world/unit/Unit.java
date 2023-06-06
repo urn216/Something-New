@@ -2,12 +2,11 @@ package code.world.unit;
 
 import code.core.Scene;
 
-import code.math.Vector2;
+import mki.math.vector.Vector2;
 
 import code.world.Camera;
 import code.world.Collider;
 import code.world.RigidBody;
-
 import code.world.fixed.WorldObject;
 
 import code.world.inv.Item;
@@ -38,13 +37,12 @@ public abstract class Unit implements RigidBody
   protected Vector2 v = new Vector2();
   protected Vector2 a = new Vector2();
   protected Vector2 addAcc = new Vector2();
-  protected Collider collider;
+  protected Collider.Round collider;
   protected List<WorldObject> triggering;
   protected boolean updated = false;
   protected double walkF;
   protected double vMax;
   protected double m;
-  protected double size;
   protected float bounceAmount = 0f;
 
   protected Color col = Color.white;
@@ -60,14 +58,12 @@ public abstract class Unit implements RigidBody
 
   public Scene getScene() {return scene;}
 
-  public double[] getStats() {return new double[] {hitPoints, position.x, position.y, v.x, v.y, 0};}
-
-  public double[] getStats(double info) {return new double[] {hitPoints, position.x, position.y, v.x, v.y, info};}
+  public double getHitPoints() {
+    return hitPoints;
+  }
 
   public List<Collider> getColls() {
-    List<Collider> colliders = new ArrayList<Collider>();
-    colliders.add(collider);
-    return colliders;
+    return List.of(collider);
   }
 
   public void setPos(Vector2 pos) {position = pos;}
@@ -165,7 +161,7 @@ public abstract class Unit implements RigidBody
     Collider ans = null;
     for (Collider coll : colliders) {
       if (!coll.isSolid()) continue;
-      Vector2 dist = collider.touching(coll);
+      Vector2 dist = collider.collide(coll);
       if (dist==null) continue;
       double cDist = isX ? dist.x : dist.y;
       if (cDist < shortest) {
@@ -180,7 +176,7 @@ public abstract class Unit implements RigidBody
     for (WorldObject obj : objects) {
       if (obj.getType().equals("Door")) {
         for (Collider other : obj.getColls()) {
-          if (other.isTrigger() && collider.touching(other)!=null) {
+          if (other.isTrigger() && collider.collide(other)!=null) {
             if (!triggering.contains(obj)) {
               triggering.add(obj);
               obj.activate(this);
@@ -203,11 +199,15 @@ public abstract class Unit implements RigidBody
     double z = cam.getZoom();
     double conX = cam.conX();
     double conY = cam.conY();
-    g.setColor(col);
-    g.fill(new Ellipse2D.Double((collider.getPos().x-size/2)*z-conX, (collider.getPos().y-size/2)*z-conY, size*z, size*z));
-    if (!alive || hurtFrames > 0) {
-      g.setColor(new Color(1f, 0.7f, 0.7f, 0.6f));
-      g.fill(new Ellipse2D.Double((collider.getPos().x-size/2)*z-conX, (collider.getPos().y-size/2)*z-conY, size*z, size*z));
-    }
+    Vector2 pos = collider.getPos();
+    double rad = collider.getRadius();
+    g.setColor(!alive || hurtFrames > 0 ? Color.pink : col);
+    g.fill(new Ellipse2D.Double((pos.x-rad)*z-conX, (pos.y-rad)*z-conY, rad*2*z, rad*2*z));
+    g.drawLine(
+      (int)(pos.x*z-conX), 
+      (int)(pos.y*z-conY), 
+      (int)((pos.x+direction.x*20)*z-conX), 
+      (int)((pos.y+direction.y*20)*z-conY)
+    );
   }
 }

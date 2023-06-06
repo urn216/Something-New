@@ -1,8 +1,8 @@
 package code.world.fixed;
 
 import code.core.Scene;
-
-import code.math.Vector2;
+import mki.io.FileIO;
+import mki.math.vector.Vector2;
 
 import code.world.Camera;
 
@@ -10,8 +10,6 @@ import java.awt.Graphics2D;
 //import java.awt.geom.Rectangle2D;
 //import java.awt.Color;
 
-import java.io.*;
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 /**
@@ -32,9 +30,8 @@ public class Decal extends WorldObject
   {
     this.scene = scene;
     position = new Vector2(x, y);
-    try {
-      img = ImageIO.read(Decal.class.getResourceAsStream("/data/textures/"+file));
-    }catch(IOException e){System.err.println("Missing Texture");}
+
+    img = FileIO.readImage(file);
     camPan = pan;
     width = img.getWidth();
     height = img.getHeight();

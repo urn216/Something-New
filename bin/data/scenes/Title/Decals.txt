@@ -1,1 +1,0 @@
-BG 1920 1080 Space.png false

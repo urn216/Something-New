@@ -2,7 +2,7 @@ package code.world.unit;
 
 import code.core.Scene;
 
-import code.math.Vector2;
+import mki.math.vector.Vector2;
 
 import code.world.Collider;
 
@@ -29,17 +29,16 @@ public class Player extends Unit
     m = 100;
     walkF = 200;
     triggering = new ArrayList<WorldObject>();
-    this.size = 16;
     this.scene = scene;
-    this.hitPoints = size*10;
+    this.hitPoints = 160;
     vMax = 8;
 
-    collider = new Collider(new Vector2(), size, true, this);
+    collider = new Collider.Round(new Vector2(), 8, true, this);
 
     // held = new Gun(this, 40, 1, 30, 5, 15, 0.96, true);
     // held = new Gun(this, 40, 1, 30, 5, 15, 0.96, true, new Gun(this, 40, 10, 5, 30, 10, 0.8, false));
-    // held = new Gun(this, 40, 1, 30, 5, 30, 0.96, true, new GunLauncher(this, new ItemUnit(0, 0, null), 20, 1, 30, 15, 0.96, true));
-    held = new BuildTool(this);
+    held = new Gun(this, 40, 1, 30, 5, 30, 0.96, true, new GunLauncher(this, new ItemUnit(0, 0, null), 20, 1, 30, 15, 0.96, true));
+    // held = new BuildTool(this);
   }
 
   public void input(boolean[] keys, boolean[] mouse, Vector2 mousePos) {
@@ -89,7 +88,7 @@ public class Player extends Unit
   public void trigger(List<WorldObject> objects) {
     for (WorldObject obj : objects) {
       for (Collider other : obj.getColls()) {
-        if (collider.touching(other)!=null && other.isTrigger()) {
+        if (collider.collide(other)!=null && other.isTrigger()) {
           if (!triggering.contains(obj)) {
             triggering.add(obj);
             obj.doTrigger();
