@@ -26,8 +26,6 @@ public abstract class Unit implements RigidBody
   protected Scene scene;
 
   protected Item held;
-  protected int heldCool1;
-  protected int heldCool2;
 
   protected boolean alive = true;
 
@@ -95,8 +93,6 @@ public abstract class Unit implements RigidBody
     for (RigidBody rb : rbs) {
       colliders.addAll(rb.getColls());
     }
-    heldCool1 = Math.max(0, heldCool1-1);
-    heldCool2 = Math.max(0, heldCool2-1);
     move(colliders);
     trigger(objs);
   }

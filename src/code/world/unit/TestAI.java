@@ -6,7 +6,6 @@ import code.world.Collider;
 import code.world.fixed.WorldObject;
 
 import code.world.inv.Gun;
-import code.world.inv.GunLauncher;
 import code.world.scene.Scene;
 
 import java.util.*;
@@ -38,7 +37,7 @@ public class TestAI extends Unit
     this.collider = new Collider.Round(new Vector2(), 8, true, this);
 
     col = Color.getHSBColor((float)Math.random(), 1f, 0.5f);
-    held = new Gun(this, 40, 1, 30, 5, 30, 0.96, true, new GunLauncher(this, new ItemUnit(0, 0, null), 20, 1, 30, 15, 0.96, true));
+    held = new Gun(this, 40, 1, 30, 160, 30, 0.96, true);
   }
 
   public void move(List<Collider> colliders) {
@@ -48,10 +47,7 @@ public class TestAI extends Unit
       direction = new Vector2(Vector2.fromAngle((Math.random()*2-1)*Math.PI, 1));
     }
 
-    if (heldCool1 <= 0) {
-      held.primeUse(position.add(direction));
-      heldCool1 = held.getCooldown();
-    }
+    held.primeUse(position.add(direction));
 
     step(colliders);
   }

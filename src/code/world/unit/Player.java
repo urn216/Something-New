@@ -34,9 +34,9 @@ public class Player extends Unit
 
     collider = new Collider.Round(new Vector2(), 8, true, this);
 
-    // held = new Gun(this, 40, 1, 30, 5, 15, 0.96, true);
-    // held = new Gun(this, 40, 1, 30, 5, 15, 0.96, true, new Gun(this, 40, 10, 5, 30, 10, 0.8, false));
-    held = new Gun(this, 40, 1, 30, 5, 30, 0.96, true, new GunLauncher(this, new ItemUnit(0, 0, null), 20, 1, 30, 15, 0.96, true));
+    // held = new Gun(this, 40, 1, 30, 168, 15, 0.96, true);
+    // held = new Gun(this, 40, 1, 30, 168, 15, 0.96, true, new Gun(this, 40, 10, 5, 30, 320, 0.8, false));
+    held = new Gun(this, 40, 1, 30, 160, 30, 0.96, true, new GunLauncher(this, new ItemUnit(0, 0, null), 20, 1, 30, 500, 0.96, true));
     // held = new BuildTool(this);
   }
 
@@ -59,15 +59,13 @@ public class Player extends Unit
     direction = new Vector2(x, y);
 
     //mouse
-    if (mouse[1] && heldCool1 <= 0) {
+    if (mouse[1]) {
       held.primeUse(mousePos);
-      heldCool1 = held.getCooldown();
       mouse[1] = held.getAutoType();
     }
 
-    if (mouse[3] && held.hasSecondary() && heldCool2 <= 0) {
+    if (mouse[3] && held.hasSecondary()) {
       held.secondUse(mousePos);
-      heldCool2 = held.getCooldown2();
       mouse[3] = held.getAutoType2();
     }
 

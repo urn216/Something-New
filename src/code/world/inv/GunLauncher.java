@@ -24,6 +24,8 @@ public class GunLauncher extends Item {
 
   private final boolean fullAuto;
 
+  private long lastShot = System.currentTimeMillis();
+
   /**
   * Constructor for Launcher Guns with no secondary fire
   *
@@ -32,7 +34,7 @@ public class GunLauncher extends Item {
   * @param v the speed of the projectile shot by the launcher
   * @param num the number of projectiles per shot
   * @param lifetime The number of frames the shot Unit exists for
-  * @param coold The number of frames before another shot can fire
+  * @param coold The number of milliseconds before another shot can fire
   * @param dmg The damage done by each projectile
   * @param acc The percent accuracy of each projectile
   * @param auto Whether or not the launcher is full auto
@@ -49,7 +51,7 @@ public class GunLauncher extends Item {
   * @param v the speed of the projectile shot by the launcher
   * @param num the number of projectiles per shot
   * @param lifetime The number of frames the shot Unit exists for
-  * @param coold The number of frames before another shot can fire
+  * @param coold The number of milliseconds before another shot can fire
   * @param dmg The damage done by each projectile
   * @param acc The percent accuracy of each projectile
   * @param auto Whether or not the launcher is full auto
@@ -80,6 +82,10 @@ public class GunLauncher extends Item {
   public boolean hasSecondary() {return secondary!=null;}
 
   public void primeUse(Vector2 usePos) {
+    long currentShot = System.currentTimeMillis();
+    if (currentShot - lastShot < cooldown) return;
+    lastShot = currentShot;
+
     Vector2 position = parent.getPos().add(parent.getVel());
     Vector2 bDir = new Vector2(usePos.x-position.x, usePos.y-position.y).unitize();
     for (int i = 0; i < projCount; i++) {
