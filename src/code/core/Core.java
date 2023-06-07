@@ -43,6 +43,7 @@ public abstract class Core {
 
   private static String saveName;
   private static String newSaveName = null;
+  private static String sceneTransitionName;
 
   private static final double TICKS_PER_SECOND = 30;
   private static final double MILLISECONDS_PER_TICK = 1000/TICKS_PER_SECOND;
@@ -51,8 +52,6 @@ public abstract class Core {
   private static final int SPLASH_TIME = 1000;
   
   private static final Decal SPLASH;
-
-  private static String transitionName;
 
   private static int sceneTransitionCounter;
   private static final int SceneTransitionLimit = 30;
@@ -109,7 +108,7 @@ public abstract class Core {
   */
   public static void toScene(String name) {
     UIController.transOut();
-    transitionName = name;
+    sceneTransitionName = name;
     sceneTransitionCounter = 0;
     state = State.TRANSITION;
     SceneTransitionFirstHalf = true;
@@ -120,24 +119,24 @@ public abstract class Core {
   * Upon second call, loads in the new one designated by the toScene method
   */
   private static void transition() {
+    //Half way through total transition. Things should be non-visible
     if (SceneTransitionFirstHalf) {
       Scene temp = previousScene;
       previousScene = currentScene;
-      if (transitionName == null) currentScene = Scene.mainMenu();
-      else if (temp != null && temp.equals(transitionName)) {currentScene = temp; currentScene.reset();}
-      else {currentScene = Scene.load(saveName, transitionName);}
+      if (sceneTransitionName == null) currentScene = Scene.mainMenu();
+      else if (temp != null && temp.equals(sceneTransitionName)) {currentScene = temp; currentScene.reset();}
+      else {currentScene = Scene.load(saveName, sceneTransitionName);}
 
       currentScene.getCam().setZoom(0);
       state = State.TRANSITION;
       sceneTransitionCounter = 0;
       SceneTransitionFirstHalf = false;
+      return;
     }
-    else {
-      currentScene.getCam().setZoom(currentScene.getCam().getDZoom());
-      if (currentScene instanceof Menu) {UIController.setCurrentPane("Main Menu"); state = State.MAINMENU;}
-      else {UIController.setCurrentPane("HUD"); state = State.RUN;}
-      // uiCon.setMode("Default");
-    }
+    //At the end of the transition. Should be completely in the new scene now
+    currentScene.getCam().setZoom(currentScene.getCam().getDZoom());
+    if (currentScene instanceof Menu) {UIController.setCurrentPane("Main Menu"); state = State.MAINMENU;}
+    else {UIController.setCurrentPane("HUD"); state = State.RUN;}
   }
 
   /**

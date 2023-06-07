@@ -11,8 +11,8 @@ public class Settings {
 
   private static final String[] DEFAULT_SETTINGS = {
     "fullScreen" , " " + "true" + "\n",
-    "soundMaster", " " + 100    + "\n",
     "soundFX",     " " + 100    + "\n",
+    "soundMaster", " " + 100    + "\n",
     "soundMusic",  " " + 100    + "\n",
     "subtitles",   " " + 0      + "\n"
   };

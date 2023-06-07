@@ -5,6 +5,7 @@ import mki.math.vector.Vector2;
 import mki.ui.elements.*;
 import mki.ui.components.*;
 import mki.ui.components.interactables.*;
+import mki.ui.control.UIAction;
 import mki.ui.control.UIColours;
 import mki.ui.control.UIController;
 import mki.ui.control.UIHelp;
@@ -54,7 +55,7 @@ public class UICreator {
       new Vector2(0.4, 0.28), 
       0.2, 
       ng,
-      new UIButton("Begin", ng::enterAct),
+      new UIButton("Begin" , ng::enterAct      ),
       new UIButton("Cancel", UIController::back)
     );
 
@@ -68,35 +69,35 @@ public class UICreator {
     );
 
     UIElement optvid = leftMenu(
-      new Vector2(0.4, 0.28), 
+      new Vector2(0.45, 0.28), 
       0.1, 
-      new UIButton("Test1", null),
+      new UIToggle("Fullscreen", Core.WINDOW::isFullScreen, (b) -> {Core.GLOBAL_SETTINGS.setBoolSetting("fullScreen", b); Core.WINDOW.setFullscreen(b);}),
       new UIButton("Test2", null),
       new UIButton("Test3", null),
       new UIButton("Test4", null)
     );
 
     UIElement optaud = leftMenu(
-      new Vector2(0.4, 0.28), 
+      new Vector2(0.45, 0.28), 
       0.1, 
-      new UISlider.Integer("Master: %.0f"  , () -> Core.GLOBAL_SETTINGS.getIntSetting("soundMaster"), (v) -> Core.GLOBAL_SETTINGS.setIntSetting("soundMaster", v), 0, 100),
-      new UISlider.Integer("Sound FX: %.0f", () -> Core.GLOBAL_SETTINGS.getIntSetting("soundFX")    , (v) -> Core.GLOBAL_SETTINGS.setIntSetting("soundFX"    , v), 0, 100),
-      new UISlider.Integer("Music: %.0f"   , () -> Core.GLOBAL_SETTINGS.getIntSetting("soundMusic") , (v) -> Core.GLOBAL_SETTINGS.setIntSetting("soundMusic" , v), 0, 100),
-      new UIToggle("Subtitles"             , () -> Core.GLOBAL_SETTINGS.getBoolSetting("subtitles") , (v) -> Core.GLOBAL_SETTINGS.setBoolSetting("subtitles" , v))
+      new UISlider.Integer("Master: %.0f"  , () -> Core.GLOBAL_SETTINGS.getIntSetting("soundMaster"), (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("soundMaster", v), 0, 100),
+      new UISlider.Integer("Sound FX: %.0f", () -> Core.GLOBAL_SETTINGS.getIntSetting("soundFX")    , (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("soundFX"    , v), 0, 100),
+      new UISlider.Integer("Music: %.0f"   , () -> Core.GLOBAL_SETTINGS.getIntSetting("soundMusic") , (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("soundMusic" , v), 0, 100),
+      new UIToggle        ("Subtitles"     , () -> Core.GLOBAL_SETTINGS.getBoolSetting("subtitles") , (v) -> Core.GLOBAL_SETTINGS.setBoolSetting("subtitles"  , v))
     );
 
-    mainMenu.addState(UIState.DEFAULT, title);
-    mainMenu.addState(UIState.DEFAULT, outPanel);
-    mainMenu.addState(UIState.NEW_GAME, title, UIState.DEFAULT);
-    mainMenu.addState(UIState.NEW_GAME, newGame);
-    mainMenu.addState(UIState.OPTIONS, title, UIState.DEFAULT);
-    mainMenu.addState(UIState.OPTIONS, options);
-    mainMenu.addState(UIState.VIDEO, title, UIState.OPTIONS);
-    mainMenu.addState(UIState.VIDEO, options);
-    mainMenu.addState(UIState.VIDEO, optvid);
-    mainMenu.addState(UIState.AUDIO, title, UIState.OPTIONS);
-    mainMenu.addState(UIState.AUDIO, options);
-    mainMenu.addState(UIState.AUDIO, optaud);
+    mainMenu.addState(UIState.DEFAULT , title   );
+    mainMenu.addState(UIState.DEFAULT , outPanel);
+    mainMenu.addState(UIState.NEW_GAME, title    , UIState.DEFAULT);
+    mainMenu.addState(UIState.NEW_GAME, newGame );
+    mainMenu.addState(UIState.OPTIONS , title    , UIState.DEFAULT , checkSettings);
+    mainMenu.addState(UIState.OPTIONS , options );
+    mainMenu.addState(UIState.VIDEO   , title    , UIState.OPTIONS);
+    mainMenu.addState(UIState.VIDEO   , options );
+    mainMenu.addState(UIState.VIDEO   , optvid  );
+    mainMenu.addState(UIState.AUDIO   , title    , UIState.OPTIONS);
+    mainMenu.addState(UIState.AUDIO   , options );
+    mainMenu.addState(UIState.AUDIO   , optaud  );
 
     return mainMenu;
   }
@@ -171,24 +172,25 @@ public class UICreator {
     UIElement optaud = centreMenu(
       new Vector2(0.5, 0.5), 
       0.1, 
-      new UISlider.Integer("Master: %.0f"  , () -> Core.GLOBAL_SETTINGS.getIntSetting("soundMaster"), (v) -> Core.GLOBAL_SETTINGS.setIntSetting("soundMaster", v), 0, 100),
-      new UISlider.Integer("Sound FX: %.0f", () -> Core.GLOBAL_SETTINGS.getIntSetting("soundFX")    , (v) -> Core.GLOBAL_SETTINGS.setIntSetting("soundFX"    , v), 0, 100),
-      new UISlider.Integer("Music: %.0f"   , () -> Core.GLOBAL_SETTINGS.getIntSetting("soundMusic") , (v) -> Core.GLOBAL_SETTINGS.setIntSetting("soundMusic" , v), 0, 100),
-      new UIToggle("Subtitles"             , () -> Core.GLOBAL_SETTINGS.getBoolSetting("subtitles") , (v) -> Core.GLOBAL_SETTINGS.setBoolSetting("subtitles" , v)),
-      new UIButton("Back", UIController::back)
+      new UISlider.Integer("Master: %.0f"  , () -> Core.GLOBAL_SETTINGS.getIntSetting("soundMaster"), (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("soundMaster", v), 0, 100),
+      new UISlider.Integer("Sound FX: %.0f", () -> Core.GLOBAL_SETTINGS.getIntSetting("soundFX")    , (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("soundFX"    , v), 0, 100),
+      new UISlider.Integer("Music: %.0f"   , () -> Core.GLOBAL_SETTINGS.getIntSetting("soundMusic") , (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("soundMusic" , v), 0, 100),
+      new UIToggle        ("Subtitles"     , () -> Core.GLOBAL_SETTINGS.getBoolSetting("subtitles") , (v) -> Core.GLOBAL_SETTINGS.setBoolSetting("subtitles"  , v)        ),
+      new UIButton        ("Back"          , UIController::back)
     );
 
-    HUD.addState(UIState.DEFAULT, health);
     HUD.setModeParent(UIState.DEFAULT, UIState.PAUSED);
     HUD.setModeBackAction(UIState.DEFAULT, ()->{UIController.retState(); Core.pause();});
-    HUD.addState(UIState.PAUSED, greyed, UIState.DEFAULT, ()->{UIController.retState(); Core.pause();});
-    HUD.addState(UIState.PAUSED, outPause);
-    HUD.addState(UIState.OPTIONS, greyed, UIState.PAUSED);
-    HUD.addState(UIState.OPTIONS, options);
-    HUD.addState(UIState.VIDEO, greyed, UIState.OPTIONS);
-    HUD.addState(UIState.VIDEO, optvid);
-    HUD.addState(UIState.AUDIO, greyed, UIState.OPTIONS);
-    HUD.addState(UIState.AUDIO, optaud);
+
+    HUD.addState(UIState.DEFAULT, health  );
+    HUD.addState(UIState.PAUSED , greyed   , UIState.DEFAULT , ()->{UIController.retState(); Core.pause();});
+    HUD.addState(UIState.PAUSED , outPause);
+    HUD.addState(UIState.OPTIONS, greyed   , UIState.PAUSED  , checkSettings);
+    HUD.addState(UIState.OPTIONS, options );
+    HUD.addState(UIState.VIDEO  , greyed   , UIState.OPTIONS);
+    HUD.addState(UIState.VIDEO  , optvid  );
+    HUD.addState(UIState.AUDIO  , greyed   , UIState.OPTIONS);
+    HUD.addState(UIState.AUDIO  , optaud  );
 
     return HUD;
   }
@@ -218,17 +220,24 @@ public class UICreator {
       new boolean[]{false, true, true, true}
     );
   }
-}
 
-class ColourPacks {
-  public static final Color DEFAULT_BACKGROUND = new Color(100, 100, 100, 127);
-  public static final Color DEFAULT_SCREEN_TINT = new Color(50, 50, 50, 127);
-  public static final Color DEFAULT_BUTTON_OUT_ACC = new Color(200, 200, 200);
-  public static final Color DEFAULT_BUTTON_BACKGROUND = new Color(160, 160, 160, 160);
-  public static final Color DEFAULT_BUTTON_IN_ACC = new Color(0, 255, 255);
-  public static final Color DEFAULT_BUTTON_LOCKED = new Color(180, 180, 180);
-  public static final Color DEFAULT_BUTTON_HOVER = new Color(0, 180, 180);
-  public static final Color[] DEFAULT_COLOUR_PACK = {
-    DEFAULT_BACKGROUND, DEFAULT_SCREEN_TINT, DEFAULT_BUTTON_OUT_ACC, DEFAULT_BUTTON_BACKGROUND, DEFAULT_BUTTON_IN_ACC, DEFAULT_BUTTON_LOCKED, DEFAULT_BUTTON_HOVER
+  private static final ElemConfirmation settingsChanged = new ElemConfirmation(
+  new Vector2(0.35, 0.5-UIHelp.calculateListHeight(BUFFER_HEIGHT, COMPON_HEIGHT/2, COMPON_HEIGHT)/2),
+  new Vector2(0.65, 0.5+UIHelp.calculateListHeight(BUFFER_HEIGHT, COMPON_HEIGHT/2, COMPON_HEIGHT)/2), 
+  BUFFER_HEIGHT, 
+  new boolean[]{false, false, false, false}, 
+  () -> {Core.GLOBAL_SETTINGS.saveChanges();   UIController.retState();},
+  () -> {Core.GLOBAL_SETTINGS.revertChanges(); UIController.retState();},
+  "Save Changes?"
+  );
+  
+  /**
+  * A lambda function which, in place of transitioning back a step,
+  * checks if the global settings have been changed and if so, 
+  * brings up a confirmation dialogue to handle the changes before transitioning back.
+  */
+  public static final UIAction checkSettings = () -> {
+    if (Core.GLOBAL_SETTINGS.hasChanged()) UIController.displayTempElement(settingsChanged);
+    else UIController.retState();
   };
 }

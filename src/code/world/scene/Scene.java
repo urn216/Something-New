@@ -184,7 +184,7 @@ public class Scene
     return res;
   }
   
-  static Scene load(String directory, boolean fromJar) {
+  private static Scene load(String directory, boolean fromJar) {
     if (!FileIO.exists(directory)) return null;
     
     List<String> allLines = FileIO.readAllLines(directory+"/Tiles.txt", fromJar);
@@ -225,7 +225,7 @@ public class Scene
     return result;
   }
   
-  static void loadAssets(String directory, Scene scene, boolean fromJar) {
+  private static void loadAssets(String directory, Scene scene, boolean fromJar) {
     if (!FileIO.exists(directory)) return;
 
     for (String line : FileIO.readAllLines(directory+"/Fixed.txt", fromJar)) {
