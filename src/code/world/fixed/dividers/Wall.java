@@ -1,7 +1,5 @@
 package code.world.fixed.dividers;
 
-import code.core.Scene;
-
 import mki.math.vector.Vector2;
 
 import code.world.Camera;
@@ -9,6 +7,7 @@ import code.world.Collider;
 import code.world.Tile;
 
 import code.world.fixed.WorldObject;
+import code.world.scene.Scene;
 
 //import java.util.*;
 import java.awt.Graphics2D;

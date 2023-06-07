@@ -1,14 +1,12 @@
 package code.world.fixed;
 
-import code.core.Scene;
-
 import mki.math.vector.Vector2;
 
 import code.world.Camera;
 import code.world.Collider;
 import code.world.RigidBody;
 import code.world.Tile;
-
+import code.world.scene.Scene;
 import code.world.unit.Unit;
 
 import java.util.*;

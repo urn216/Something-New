@@ -1,10 +1,10 @@
 package code.world;
 
-import code.core.Scene;
-
 import mki.math.vector.Vector2;
 
 import java.util.*;
+
+import code.world.scene.Scene;
 
 /**
 * Write a description of class WorldObject here.

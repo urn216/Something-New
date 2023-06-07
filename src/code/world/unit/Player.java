@@ -1,7 +1,5 @@
 package code.world.unit;
 
-import code.core.Scene;
-
 import mki.math.vector.Vector2;
 
 import code.world.Collider;
@@ -9,6 +7,7 @@ import code.world.Collider;
 import code.world.fixed.WorldObject;
 
 import code.world.inv.*;
+import code.world.scene.Scene;
 
 import java.util.*;
 import java.awt.event.KeyEvent;

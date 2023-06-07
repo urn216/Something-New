@@ -98,7 +98,7 @@ public class Tile
     nb[1][1] = null;
   }
 
-  public void bigUpdate(List<Unit> allUnits, List<WorldObject> objs) {
+  public void bigUpdate(Collection<Unit> allUnits, Collection<WorldObject> objs) {
     units.clear();
     fixedObj.clear();
     bullets.clear();

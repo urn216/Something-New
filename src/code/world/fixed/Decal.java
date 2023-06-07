@@ -1,10 +1,10 @@
 package code.world.fixed;
 
-import code.core.Scene;
 import mki.io.FileIO;
 import mki.math.vector.Vector2;
 
 import code.world.Camera;
+import code.world.scene.Scene;
 
 import java.awt.Graphics2D;
 //import java.awt.geom.Rectangle2D;
@@ -30,6 +30,9 @@ public class Decal extends WorldObject
   {
     this.scene = scene;
     position = new Vector2(x, y);
+    String[] parts = file.split("/");
+    this.type = parts[0];
+    this.dir = parts[parts.length-1];
 
     img = FileIO.readImage(file);
     camPan = pan;
@@ -48,5 +51,9 @@ public class Decal extends WorldObject
     else {
       g.drawImage(img, null, (int)(origin.x), (int)(origin.y));
     }
+  }
+
+  public String toString() {
+    return type+" "+(int)position.x+" "+(int)position.y+" "+dir+" "+camPan;
   }
 }

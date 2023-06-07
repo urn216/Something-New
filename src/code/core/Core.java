@@ -5,13 +5,13 @@ import java.util.Date;
 
 import mki.io.FileIO;
 
-import mki.math.vector.Vector2;
-
 import mki.ui.control.UIController;
 import mki.ui.control.UIState;
 
 import code.world.Camera;
 import code.world.fixed.Decal;
+import code.world.scene.Menu;
+import code.world.scene.Scene;
 
 import java.awt.Color;
 import java.awt.Graphics;
@@ -44,8 +44,6 @@ public abstract class Core {
   private static String saveName;
   private static String newSaveName = null;
 
-  private static Camera cam;
-
   private static final double TICKS_PER_SECOND = 30;
   private static final double MILLISECONDS_PER_TICK = 1000/TICKS_PER_SECOND;
   
@@ -54,11 +52,11 @@ public abstract class Core {
   
   private static final Decal SPLASH;
 
-  private static String TransitionName;
+  private static String transitionName;
 
   private static int sceneTransitionCounter;
   private static final int SceneTransitionLimit = 30;
-  private static boolean SceneTransitionFirstHalf = false;
+  private static boolean SceneTransitionFirstHalf = true;
 
   // int pauseCool = 0;
   private static int deathTime = 0;
@@ -85,7 +83,6 @@ public abstract class Core {
 
     SPLASH = new Decal(WINDOW.screenWidth()/2, WINDOW.screenHeight()/2, "splash.png", false, null);
     WINDOW.FRAME.setBackground(new Color(173, 173, 173));
-    cam = new Camera(new Vector2(), new Vector2(), 0);
     
     UIController.putPane("Main Menu", UICreator.createMain());
     UIController.putPane("HUD"      , UICreator.createHUD ());
@@ -102,7 +99,7 @@ public abstract class Core {
   * @return the currently active camera
   */
   public static Camera getActiveCam() {
-    return cam;
+    return currentScene == null ? null : currentScene.getCam();
   }
 
   /**
@@ -112,7 +109,7 @@ public abstract class Core {
   */
   public static void toScene(String name) {
     UIController.transOut();
-    TransitionName = name;
+    transitionName = name;
     sceneTransitionCounter = 0;
     state = State.TRANSITION;
     SceneTransitionFirstHalf = true;
@@ -126,17 +123,19 @@ public abstract class Core {
     if (SceneTransitionFirstHalf) {
       Scene temp = previousScene;
       previousScene = currentScene;
-      if (temp != null && temp.equals(TransitionName)) {currentScene = temp; currentScene.reset();}
-      else {currentScene = new Scene(TransitionName, saveName);}
-      cam = new Camera(new Vector2(32, 32), new Vector2(), 2);
-      cam.setZoom(0);
+      if (transitionName == null) currentScene = Scene.mainMenu();
+      else if (temp != null && temp.equals(transitionName)) {currentScene = temp; currentScene.reset();}
+      else {currentScene = Scene.load(saveName, transitionName);}
+
+      currentScene.getCam().setZoom(0);
+      state = State.TRANSITION;
       sceneTransitionCounter = 0;
       SceneTransitionFirstHalf = false;
     }
     else {
-      cam.setZoom(cam.getDZoom());
-      if (TransitionName.equals("Title")) {UIController.setCurrentPane("Main Menu"); state = State.MAINMENU; cam.setTarget(new Vector2(0,0));}
-      else {UIController.setCurrentPane("HUD"); state = State.RUN; cam.setTarU(currentScene.getPlayer());}
+      currentScene.getCam().setZoom(currentScene.getCam().getDZoom());
+      if (currentScene instanceof Menu) {UIController.setCurrentPane("Main Menu"); state = State.MAINMENU;}
+      else {UIController.setCurrentPane("HUD"); state = State.RUN;}
       // uiCon.setMode("Default");
     }
   }
@@ -187,7 +186,7 @@ public abstract class Core {
   */
   public static void quitToMenu() {
     saveName = null;
-    toScene("Title");
+    toScene(null);
   }
 
   /**
@@ -207,7 +206,7 @@ public abstract class Core {
         case SPLASH:
         if (tickTime-START_TIME >= SPLASH_TIME) {
           Controls.initialiseControls(WINDOW.FRAME);
-          quitToMenu();
+          transition();
         }
         break;
         case MAINMENU:
@@ -219,8 +218,7 @@ public abstract class Core {
         break;
 
         case RUN:
-        cam.follow();
-        currentScene.update(Controls.KEY_DOWN, Controls.MOUSE_DOWN, new Vector2 ((Controls.mousePos.x+cam.conX())/cam.getZoom(), (Controls.mousePos.y+cam.conY())/cam.getZoom()));
+        currentScene.update(Controls.KEY_DOWN, Controls.MOUSE_DOWN, Controls.mousePos);
         if (!currentScene.getPlayer().isAlive()) {state = State.DEATH;}
         break;
 
@@ -229,19 +227,18 @@ public abstract class Core {
 
         case DEATH:
         if (deathTime%2==0) {
-          cam.follow();
-          currentScene.update(Controls.KEY_DOWN, Controls.MOUSE_DOWN, new Vector2 ((Controls.mousePos.x+cam.conX())/cam.getZoom(), (Controls.mousePos.y+cam.conY())/cam.getZoom()));
+          currentScene.update(Controls.KEY_DOWN, Controls.MOUSE_DOWN, Controls.mousePos);
         }
         if (deathTime >= 120) {
           deathTime = 0;
           currentScene.reset();
-          cam.setTarU(currentScene.getPlayer());
           state = State.RUN;
         }
         deathTime++;
         break;
 
         case TRANSITION:
+        Camera cam = currentScene.getCam();
         cam.follow();
         sceneTransitionCounter++;
         if (SceneTransitionFirstHalf) {cam.setZoom(cam.getZoom()*2.0/3.0);}
@@ -265,17 +262,17 @@ public abstract class Core {
 
     switch (state) {
       case SPLASH:
-      SPLASH.draw(g, cam);
+      SPLASH.draw(g, null);
       break;
       case MAINMENU:
       case TRANSITION:
-      if (currentScene != null) {currentScene.draw(g, cam, true);}
+      if (currentScene != null) {currentScene.draw(g);}
       UIController.draw(g, WINDOW.screenWidth(), WINDOW.screenHeight());
       break;
       case RUN:
       case PAUSE:
       case DEATH:
-      currentScene.draw(g, cam, true);
+      currentScene.draw(g);
       UIController.draw(g, WINDOW.screenWidth(), WINDOW.screenHeight());
       break;
     }

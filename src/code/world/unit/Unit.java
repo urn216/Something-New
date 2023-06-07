@@ -1,7 +1,5 @@
 package code.world.unit;
 
-import code.core.Scene;
-
 import mki.math.vector.Vector2;
 
 import code.world.Camera;
@@ -10,6 +8,7 @@ import code.world.RigidBody;
 import code.world.fixed.WorldObject;
 
 import code.world.inv.Item;
+import code.world.scene.Scene;
 
 import java.util.*;
 import java.awt.Graphics2D;

@@ -1,7 +1,5 @@
 package code.world.fixed;
 
-import code.core.Scene;
-
 import code.world.Ray;
 import mki.math.vector.Vector2;
 
@@ -9,6 +7,7 @@ import code.world.Camera;
 import code.world.Collider;
 import code.world.Tile;
 import code.world.Collider.Round;
+import code.world.scene.Scene;
 
 import java.util.*;
 import java.awt.Graphics2D;
