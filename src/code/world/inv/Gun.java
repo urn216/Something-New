@@ -12,18 +12,18 @@ import code.world.Bullet;
 */
 public class Gun extends Item {
 
-  private final Item secondary;
+  protected final Item secondary;
 
-  private final double accuracy;
-  private final double projVelocity;
-  private final int projCount;
-  private final int projLifetime;
-  private final int cooldown;
-  private final double damage;
+  protected final double accuracy;
+  protected final double projVelocity;
+  protected final int projCount;
+  protected final int projLifetime;
+  protected final int cooldown;
+  protected final double damage;
 
-  private final boolean fullAuto;
+  protected final boolean fullAuto;
 
-  private long lastShot = System.currentTimeMillis();
+  protected long lastShot = 0;
 
   /**
   * Constructor for Guns with no secondary fire
@@ -67,16 +67,22 @@ public class Gun extends Item {
     secondary = second;
   }
 
+  @Override
   public boolean getAutoType() {return fullAuto;}
 
+  @Override
   public boolean getAutoType2() {return secondary.getAutoType();}
 
+  @Override
   public int getCooldown() {return cooldown;}
 
+  @Override
   public int getCooldown2() {return secondary.getCooldown();}
 
+  @Override
   public boolean hasSecondary() {return secondary!=null;}
 
+  @Override
   public void primeUse(Vector2 usePos) {
     long currentShot = System.currentTimeMillis();
     if (currentShot - lastShot < cooldown) return;
@@ -90,6 +96,7 @@ public class Gun extends Item {
     }
   }
 
+  @Override
   public void secondUse(Vector2 usePos) {
     secondary.primeUse(usePos);
   }

@@ -1,7 +1,5 @@
 package code.world.inv;
 
-import mki.math.MathHelp;
-
 import mki.math.vector.Vector2;
 
 import code.world.RigidBody;
@@ -10,21 +8,9 @@ import code.world.unit.Unit;
 /**
 * Gun class
 */
-public class GunLauncher extends Item {
-
-  private final Item secondary;
+public class GunLauncher extends Gun {
 
   private final Unit projectile;
-
-  private final double accuracy;
-  private final double projVelocity;
-  private final int projCount;
-  //private int projLifetime;
-  private final int cooldown;
-
-  private final boolean fullAuto;
-
-  private long lastShot = System.currentTimeMillis();
 
   /**
   * Constructor for Launcher Guns with no secondary fire
@@ -39,8 +25,8 @@ public class GunLauncher extends Item {
   * @param acc The percent accuracy of each projectile
   * @param auto Whether or not the launcher is full auto
   */
-  public GunLauncher(RigidBody parent, Unit proj, double v, int num, int lifetime, int coold, double acc, boolean auto) {
-    this(parent, proj, v, num, lifetime, coold, acc, auto, null);
+  public GunLauncher(RigidBody parent, Unit proj, double v, int num, int coold, double acc, boolean auto) {
+    this(parent, proj, v, num, coold, acc, auto, null);
   }
 
   /**
@@ -57,30 +43,13 @@ public class GunLauncher extends Item {
   * @param auto Whether or not the launcher is full auto
   * @param second The secondary fire mode for the launcher
   */
-  public GunLauncher(RigidBody parent, Unit proj, double v, int num, int lifetime, int coold, double acc, boolean auto, Item second) {
-    this.parent = parent;
+  public GunLauncher(RigidBody parent, Unit proj, double v, int num, int coold, double acc, boolean auto, Item second) {
+    super(parent, v, num, 0, coold, 0, acc, auto, second);
 
     projectile = proj;
-
-    projVelocity = v;
-    projCount = num;
-    //projLifetime = lifetime;
-    cooldown = coold;
-    accuracy = MathHelp.clamp(0.5-(acc/2), 0, 1);
-    fullAuto = auto;
-    secondary = second;
   }
 
-  public boolean getAutoType() {return fullAuto;}
-
-  public boolean getAutoType2() {return secondary.getAutoType();}
-
-  public int getCooldown() {return cooldown;}
-
-  public int getCooldown2() {return secondary.getCooldown();}
-
-  public boolean hasSecondary() {return secondary!=null;}
-
+  @Override
   public void primeUse(Vector2 usePos) {
     long currentShot = System.currentTimeMillis();
     if (currentShot - lastShot < cooldown) return;
@@ -94,9 +63,5 @@ public class GunLauncher extends Item {
       b.setVel(bRan.add(parent.getVel()));
       parent.getScene().addUnit(b);
     }
-  }
-
-  public void secondUse(Vector2 usePos) {
-    secondary.primeUse(usePos);
   }
 }
