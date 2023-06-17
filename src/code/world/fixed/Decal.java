@@ -22,6 +22,8 @@ public class Decal extends WorldObject
 {
   private boolean camPan;
   private BufferedImage img;
+  private final String type;
+  private final String directory;
 
   /**
   * Constructor for Decal objects
@@ -32,7 +34,7 @@ public class Decal extends WorldObject
     position = new Vector2(x, y);
     String[] parts = file.split("/");
     this.type = parts[0];
-    this.dir = parts[parts.length-1];
+    this.directory = parts[parts.length-1];
 
     img = FileIO.readImage(file);
     camPan = pan;
@@ -54,6 +56,6 @@ public class Decal extends WorldObject
   }
 
   public String toString() {
-    return type+" "+(int)position.x+" "+(int)position.y+" "+dir+" "+camPan;
+    return type+" "+(int)position.x+" "+(int)position.y+" "+directory+" "+camPan;
   }
 }

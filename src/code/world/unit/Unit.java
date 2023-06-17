@@ -6,7 +6,7 @@ import code.world.Camera;
 import code.world.Collider;
 import code.world.RigidBody;
 import code.world.fixed.WorldObject;
-
+import code.world.fixed.dividers.Door;
 import code.world.inv.Item;
 import code.world.scene.Scene;
 
@@ -169,7 +169,7 @@ public abstract class Unit implements RigidBody
 
   public void trigger(List<WorldObject> objects) {
     for (WorldObject obj : objects) {
-      if (obj.getType().equals("Door")) {
+      if (obj instanceof Door) {
         for (Collider other : obj.getColls()) {
           if (other.isTrigger() && collider.collide(other)!=null) {
             if (!triggering.contains(obj)) {

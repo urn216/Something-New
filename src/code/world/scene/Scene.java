@@ -10,6 +10,7 @@ import code.world.Camera;
 import code.world.Tile;
 
 import code.world.fixed.Decal;
+import code.world.fixed.Direction;
 import code.world.fixed.dividers.Door;
 import code.world.fixed.Light;
 import code.world.fixed.dividers.Wall;
@@ -235,9 +236,9 @@ public class Scene
         type = scan.next();
       }
       else {type = "gap";}
-      if (type.equals("Wall")) {scene.fixedObj.add(new Wall(scan.nextDouble(), scan.nextDouble(), scan.next(), scan.next(), scene));}
-      else if (type.equals("Door")) {scene.fixedObj.add(new Door(scan.nextDouble(), scan.nextDouble(), scan.next(), scan.next(), scene));}
-      else if (type.equals("Light")) {scene.fixedObj.add(new Light(scan.nextDouble(), scan.nextDouble(), scan.next(), scene));}
+      if (type.equals("Wall")) {scene.fixedObj.add(new Wall(scan.nextDouble(), scan.nextDouble(), Direction.valueOf(scan.next()), scene));}
+      else if (type.equals("Door")) {scene.fixedObj.add(new Door(scan.nextDouble(), scan.nextDouble(), Direction.valueOf(scan.next()), scene));}
+      else if (type.equals("Light")) {scene.fixedObj.add(new Light(scan.nextDouble(), scan.nextDouble(), scene));}
       scan.close();
     }
     

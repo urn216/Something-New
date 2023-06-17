@@ -27,10 +27,9 @@ public class Light extends WorldObject
   /**
   * Constructor for Light objects
   */
-  public Light(double x, double y, String type, Scene scene)
+  public Light(double x, double y, Scene scene)
   {
     this.scene = scene;
-    this.type = type;
     origin = new Vector2(x*Tile.TILE_SIZE, y*Tile.TILE_SIZE);
     position = origin.add(Tile.TILE_SIZE/2);
     width = 10;

@@ -24,12 +24,11 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject>
 {
 
   protected Color col = Color.gray;
-  protected String dir = "";
+  protected Direction direction = Direction.North;
   protected Vector2 position;
   protected Vector2 origin;
   protected double width;
   protected double height;
-  protected String type;
   protected List<Collider> colliders = new ArrayList<Collider>();
   protected Scene scene;
 
@@ -38,8 +37,6 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject>
   public Vector2 getPos() {return position;}
 
   public Vector2 getVel() {return new Vector2();}
-
-  public String getType() {return type;}
 
   public List<Collider> getColls() {return colliders;}
 
@@ -87,11 +84,11 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject>
   }
 
   public String toString() {
-    return this.getClass().getSimpleName()+" "+(int)(origin.x/Tile.TILE_SIZE)+" "+(int)(origin.y/Tile.TILE_SIZE)+" "+dir+" "+type;
+    return this.getClass().getSimpleName()+" "+(int)(origin.x/Tile.TILE_SIZE)+" "+(int)(origin.y/Tile.TILE_SIZE)+" "+direction;
   }
 
   public int hashCode() {
-    return Integer.hashCode(((int)position.x))^Integer.hashCode(((int)position.y))^type.hashCode()^dir.hashCode();
+    return Integer.hashCode(((int)position.x))^Integer.hashCode(((int)position.y))^direction.hashCode();
   }
 
   public int compareTo(WorldObject other) {
@@ -99,9 +96,9 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject>
     if (one == 0) {
       one = Integer.compare((int)position.y, (int)other.position.y);
       if (one == 0) {
-        one = this.type.compareTo(other.type);
+        one = this.getClass().getName().compareTo(other.getClass().getName());
         if (one == 0) {
-          this.dir.compareTo(other.dir);
+          one = this.direction.compareTo(other.direction);
         }
       }
     }
@@ -111,6 +108,6 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject>
   public boolean equals(Object ot) {
     if (ot.getClass()!=this.getClass()) {return false;}
     WorldObject other = (WorldObject)ot;
-    return (int)position.x==(int)other.position.x&&(int)position.y==(int)other.position.y&&type.equals(other.type)&&dir.equals(other.dir);
+    return (int)position.x==(int)other.position.x&&(int)position.y==(int)other.position.y&&direction == other.direction;
   }
 }
