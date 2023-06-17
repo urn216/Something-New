@@ -36,9 +36,9 @@ public class Light extends WorldObject
     colliders.add(new Collider.Round(new Vector2(), 5, false, this));
   }
 
-  public void calculateShadows(List<WorldObject> objs) {
+  public void calculateShadows(Collection<WorldObject> objs) {
     List<WorldObject> localObj = new ArrayList<WorldObject>();
-    // List<Ray> rays = new ArrayList<Ray>();
+    List<Ray> rays = new ArrayList<Ray>();
     double limit = RANGE*RANGE+Tile.TILE_SIZE*Tile.TILE_SIZE;
     for (WorldObject obj : objs) {
       if (obj.getPos().subtract(position).magsquare() < limit) {
@@ -63,6 +63,7 @@ public class Light extends WorldObject
           col.collide(ray);
         }
       }
+      if (ray.hasHit()) this.rays.add(ray);
     }
   }
 

@@ -3,7 +3,6 @@ package code.world;
 import mki.math.vector.Vector2;
 
 import mki.math.MathHelp;
-
 // import code.world.fixed.Light;
 import code.world.fixed.WorldObject;
 
@@ -112,7 +111,7 @@ public class Tile
       Vector2 objPos = obj.getOrigin();
       if (objPos.x >= position.x-TILE_SIZE/2 && objPos.x < position.x+TILE_SIZE/2 && objPos.y >= position.y-TILE_SIZE/2 && objPos.y < position.y+TILE_SIZE/2) {
         fixedObj.add(obj);
-        // if (obj.getClass().getName().equals("code.world.Light")) ((Light)obj).calculateShadows(objs);
+        // if (obj instanceof Light light) light.calculateShadows(objs);
       }
     }
   }
