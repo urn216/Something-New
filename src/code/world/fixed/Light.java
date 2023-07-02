@@ -19,8 +19,7 @@ import java.awt.Color;
 /**
 * Lights and stuff
 */
-public class Light extends WorldObject
-{
+public class Light extends WorldObject {
   public static final double RANGE = Tile.TILE_SIZE*3;
   List<Ray> rays = new ArrayList<Ray>();
 

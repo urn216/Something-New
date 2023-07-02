@@ -19,8 +19,7 @@ import java.awt.Color;
 * @author (your name)
 * @version (a version number or a date)
 */
-public class Tile
-{
+public class Tile {
   public static final double TILE_SIZE = 64;
 
   private Vector2 position;
@@ -41,8 +40,7 @@ public class Tile
   /**
   * Constructor for Tiles
   */
-  public Tile(double x, double y, int active)
-  {
+  public Tile(double x, double y, int active) {
     origin = new Vector2(x*TILE_SIZE, y*TILE_SIZE);
     position = new Vector2(x*TILE_SIZE+TILE_SIZE/2, y*TILE_SIZE+TILE_SIZE/2);
     this.active = active != 0 ? true: false;

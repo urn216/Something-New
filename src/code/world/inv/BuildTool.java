@@ -9,7 +9,6 @@ import code.world.RigidBody;
 */
 public class BuildTool extends Item {
 
-
   public BuildTool(RigidBody parent) {
     this.parent = parent;
   }

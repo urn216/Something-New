@@ -17,15 +17,13 @@ import java.awt.Color;
 /**
 * Walls and stuff
 */
-public class Wall extends WorldObject
-{
+public class Wall extends WorldObject {
   private double thickness = 10;
   
   /**
   * Constructor for Wall objects
   */
-  public Wall(double x, double y, Direction direction, Scene scene)
-  {
+  public Wall(double x, double y, Direction direction, Scene scene) {
     this.scene = scene;
     this.direction = direction;
     origin = new Vector2(x*Tile.TILE_SIZE, y*Tile.TILE_SIZE);

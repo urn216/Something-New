@@ -27,8 +27,7 @@ import java.awt.Graphics2D;
 /**
 * Scene class
 */
-public class Scene
-{
+public class Scene {
   protected String saveName;
   protected String sceneName;
   

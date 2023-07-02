@@ -21,8 +21,7 @@ import java.awt.Color;
 * @author (your name)
 * @version (a version number or a date)
 */
-public abstract class Unit implements RigidBody
-{
+public abstract class Unit implements RigidBody {
   protected Scene scene;
 
   protected Item held;

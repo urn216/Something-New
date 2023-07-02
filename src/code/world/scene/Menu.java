@@ -22,8 +22,6 @@ public class Menu extends Scene {
   @Override
   public void reset() {}
 
-
-
   @Override
   public void draw(Graphics2D g) {
     for (Decal d : bgDecals) {

@@ -15,8 +15,7 @@ import java.awt.event.KeyEvent;
 /**
 * Player Object
 */
-public class Player extends Unit
-{
+public class Player extends Unit {
   /**
   * Constructor for objects of class Player
   */

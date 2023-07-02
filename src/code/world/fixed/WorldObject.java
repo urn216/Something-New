@@ -20,8 +20,7 @@ import java.awt.Color;
 * @author (your name)
 * @version (a version number or a date)
 */
-public abstract class WorldObject implements RigidBody, Comparable<WorldObject>
-{
+public abstract class WorldObject implements RigidBody, Comparable<WorldObject> {
 
   protected Color col = Color.gray;
   protected Direction direction = Direction.North;

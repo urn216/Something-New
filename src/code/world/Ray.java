@@ -8,8 +8,7 @@ import mki.math.MathHelp;
 /**
 * Collider class
 */
-public class Ray
-{
+public class Ray {
   private final Vector2 sPos;
   private final Vector2 offset;
 

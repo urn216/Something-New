@@ -19,8 +19,7 @@ import java.awt.Color;
 /**
 * Doors and stuff
 */
-public class Door extends WorldObject
-{
+public class Door extends WorldObject {
   private boolean highlight;
   private boolean open;
   
@@ -29,8 +28,7 @@ public class Door extends WorldObject
   /**
   * Constructor for Door objects
   */
-  public Door(double x, double y, Direction direction, Scene scene)
-  {
+  public Door(double x, double y, Direction direction, Scene scene) {
     this.scene = scene;
     this.direction = direction;
     origin = new Vector2(x*Tile.TILE_SIZE, y*Tile.TILE_SIZE);

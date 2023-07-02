@@ -7,8 +7,7 @@ import mki.math.vector.Vector2;
 /**
 * Collider class
 */
-public abstract class Collider
-{
+public abstract class Collider {
   protected static final double OFFSET = 0.000001;
   
   protected boolean shootable;
@@ -19,7 +18,7 @@ public abstract class Collider
   
   protected Vector2 closest;
   
-  public static class Round extends Collider{
+  public static class Round extends Collider {
     private double radius;
     public Round(Vector2 offset, double radius, boolean solid, RigidBody parent) {
       this.offset = offset;

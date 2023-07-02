@@ -18,8 +18,7 @@ import java.awt.image.BufferedImage;
 * @author (your name)
 * @version (a version number or a date)
 */
-public class Decal extends WorldObject
-{
+public class Decal extends WorldObject {
   private boolean camPan;
   private BufferedImage img;
   private final String type;
@@ -28,8 +27,7 @@ public class Decal extends WorldObject
   /**
   * Constructor for Decal objects
   */
-  public Decal(double x, double y, String file, boolean pan, Scene scene)
-  {
+  public Decal(double x, double y, String file, boolean pan, Scene scene) {
     this.scene = scene;
     position = new Vector2(x, y);
     String[] parts = file.split("/");

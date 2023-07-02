@@ -12,9 +12,7 @@ import code.world.scene.Scene;
 * @author (your name)
 * @version (a version number or a date)
 */
-public interface RigidBody
-{
-
+public interface RigidBody {
   public Vector2 getPos();
 
   public Vector2 getVel();

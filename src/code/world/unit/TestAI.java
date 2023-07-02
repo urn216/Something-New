@@ -17,8 +17,7 @@ import java.awt.Color;
 * @author (your name)
 * @version (a version number or a date)
 */
-public class TestAI extends Unit
-{
+public class TestAI extends Unit {
   private int dirChange = (int) (Math.random()*60);
   /**
   * Constructor for objects of class TestAI

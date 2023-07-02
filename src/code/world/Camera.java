@@ -9,8 +9,7 @@ import code.world.unit.Unit;
 /**
 * A camera allows a player to see what's happening in the game.
 */
-public class Camera
-{
+public class Camera {
   private static final double CLOSE_MAGNITUDE = 0.125;
 
   private double defaultZoom;
@@ -25,8 +24,7 @@ public class Camera
   *
   * Constructs a camera with an x position, a y position, a default zoom level, and the current resolution of the game window.
   */
-  public Camera(Vector2 worldPos, Vector2 offset, double z)
-  {
+  public Camera(Vector2 worldPos, Vector2 offset, double z) {
     this.position = worldPos;
     this.offset = offset;
     this.defaultZoom = z;
@@ -47,12 +45,12 @@ public class Camera
 
   public void setOffset(Vector2 offset) {this.offset = offset;}
 
-  public void setTarget(Vector2 t){
+  public void setTarget(Vector2 t) {
     target = t;
     tarU = null;
   }
 
-  public void setTarU(Unit u){
+  public void setTarU(Unit u) {
     tarU = u;
     target = u.getPos();
   }
