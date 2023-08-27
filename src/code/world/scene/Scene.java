@@ -161,6 +161,18 @@ public class Scene {
 
 
 
+  //  RNGRNGRNGRNGRNGRNGRNGRNGRNGRNG  //
+  //RNGRNG - Scene Generation - RNGRNG//
+  //  RNGRNGRNGRNGRNGRNGRNGRNGRNGRNG  //
+
+
+
+  public static Scene generateRandom(RandomGenerator generator) {
+    return generator.generate();
+  }
+
+
+
   //  IOIOIOIOIOIOIOIOIOIOIOIOIOIOIO  //
   //IOIOIOIO - File Actions - IOIOIOIO//
   //  IOIOIOIOIOIOIOIOIOIOIOIOIOIOIO  //
@@ -176,7 +188,7 @@ public class Scene {
     }
 
     res = load("../data/scenes/"+sceneName, false);
-    if (res == null) res = GenerateRandom.generate();
+    if (res == null) res = generateRandom(new DungeonGenerator());
 
     res.saveName = saveName;
     res.sceneName = sceneName;

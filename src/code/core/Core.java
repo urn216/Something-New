@@ -165,7 +165,9 @@ public abstract class Core {
   *
   * @param newSaveName the name of the new save game.
   */
-  public static void newGame(String newSaveName) {if (!newSaveName.matches(BLACKLISTED_CHARS)) Core.newSaveName = newSaveName;}
+  public static void newGame(String newSaveName) {
+    if (!newSaveName.matches(BLACKLISTED_CHARS)) Core.newSaveName = newSaveName;
+  }
 
   /**
   * Starts up a new game in the current save game slot designated by 'saveName' and switches to the opening scene
