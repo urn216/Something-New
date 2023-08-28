@@ -278,7 +278,7 @@ public abstract class Core {
 
     switch (state) {
       case SPLASH:
-      SPLASH.draw(g, null);
+      SPLASH.draw(g);
       break;
       case MAINMENU:
       case TRANSITION:

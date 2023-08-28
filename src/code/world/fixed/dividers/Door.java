@@ -2,7 +2,6 @@ package code.world.fixed.dividers;
 
 import mki.math.vector.Vector2;
 
-import code.world.Camera;
 import code.world.Collider;
 import code.world.Tile;
 
@@ -96,10 +95,11 @@ public class Door extends WorldObject {
     open = !open;
   }
   
-  public void draw(Graphics2D g, Camera cam) {
-    double z = cam.getZoom();
-    double conX = cam.conX();
-    double conY = cam.conY();
+  @Override
+  public void draw(Graphics2D g) {
+    double z = scene.getCam().getZoom();
+    double conX = scene.getCam().conX();
+    double conY = scene.getCam().conY();
     for (Collider col : colliders) {
       Collider.Square collider = (Collider.Square) col;
       if (collider.isSolid()) {

@@ -145,7 +145,7 @@ public class Scene {
   
   public void draw(Graphics2D g) {
     for (Decal d : bgDecals) {
-      d.draw(g, cam);
+      d.draw(g);
     }
     double halfW = Core.WINDOW.screenWidth()/(2*cam.getZoom());
     int left = Math.max((int)((cam.getPos().x-halfW)/Tile.TILE_SIZE + mapSX/2), 0);
@@ -156,12 +156,12 @@ public class Scene {
     
     if (drawInterior) {
       onEachTile(left, right, top, bottom, (i, j) -> map[i][j].draw(g, cam));
-      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawLowerObjects(g, cam));
-      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawUnits(g, cam));
-      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawBullets(g, cam));
-      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawHigherObjects(g, cam));
+      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawLowerObjects(g));
+      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawUnits(g));
+      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawBullets(g));
+      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawHigherObjects(g));
 
-      player.drawReticle(g, cam);
+      player.drawReticle(g);
     }
   }
 

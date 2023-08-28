@@ -65,7 +65,8 @@ public class Bullet {
     return (lifetime > 0);
   }
 
-  public void draw(Graphics2D g, Camera cam) {
+  public void draw(Graphics2D g) {
+    Camera cam = parent.getScene().getCam();
     double z = cam.getZoom();
     double conX = cam.conX();
     double conY = cam.conY();

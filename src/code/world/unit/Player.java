@@ -2,7 +2,6 @@ package code.world.unit;
 
 import mki.math.vector.Vector2;
 import code.core.Core;
-import code.world.Camera;
 import code.world.Collider;
 
 import code.world.fixed.WorldObject;
@@ -24,7 +23,7 @@ public class Player extends Unit {
   public Player(double X, double Y, Scene scene) {
     super(
       scene,                            //scene
-      8,                                //size
+      8,                                //radius
       new Vector2(X, Y),                //pos
       new Vector2(),                    //dir
       6000/Core.TICKS_PER_SECOND,       //walk-force
@@ -35,9 +34,19 @@ public class Player extends Unit {
     );
 
     // held = new Gun(this, 40, 1, 30, 168, 15, 0.96, true);
-    // held = new Gun(this, 40, 1, 30, 168, 15, 0.96, true, new Gun(this, 40, 10, 5, 30, 320, 0.8, false));
+    held = new Gun(
+      this,  
+      1200, 
+      1, 
+      1000, 
+      168, 
+      15, 
+      0.96, 
+      true, 
+      new Gun(this, 1200, 10, 150, 500, 16, 0.8, false)
+    );
     // held = new Gun(this, 40, 1, 30, 160, 30, 0.96, true, new GunLauncher(this, new ItemUnit(0, 0, null), 20, 1, 500, 0.96, true));
-    held = new BuildTool(this);
+    // held = new BuildTool(this);
   }
 
   public void input(boolean[] keys, boolean[] mouse, Vector2 mousePos) {
@@ -99,7 +108,7 @@ public class Player extends Unit {
     }
   }
 
-  public void drawReticle(Graphics2D g, Camera cam) {
+  public void drawReticle(Graphics2D g) {
     if (alive) held.drawReticle(g, scene.getCursorWorldPos());
   }
 }

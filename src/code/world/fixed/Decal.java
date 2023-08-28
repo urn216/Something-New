@@ -3,7 +3,6 @@ package code.world.fixed;
 import mki.io.FileIO;
 import mki.math.vector.Vector2;
 
-import code.world.Camera;
 import code.world.scene.Scene;
 
 import java.awt.Graphics2D;
@@ -41,11 +40,12 @@ public class Decal extends WorldObject {
     origin = new Vector2(x-width/2, y-height/2);
   }
 
-  public void draw(Graphics2D g, Camera cam) {
+  @Override
+  public void draw(Graphics2D g) {
     if (camPan) {
-      double z = cam.getZoom();
-      double conX = cam.conX();
-      double conY = cam.conY();
+      double z = scene.getCam().getZoom();
+      double conX = scene.getCam().conX();
+      double conY = scene.getCam().conY();
       g.drawImage(img, null, (int)(position.x*z-conX-width/2), (int)(position.y*z-conY-height/2));
     }
     else {

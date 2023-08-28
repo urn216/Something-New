@@ -3,7 +3,6 @@ package code.world.fixed;
 import code.world.Ray;
 import mki.math.vector.Vector2;
 
-import code.world.Camera;
 import code.world.Collider;
 import code.world.Tile;
 import code.world.Collider.Round;
@@ -66,10 +65,10 @@ public class Light extends WorldObject {
     }
   }
 
-  public void draw(Graphics2D g, Camera cam) {
-    double z = cam.getZoom();
-    double conX = cam.conX();
-    double conY = cam.conY();
+  public void draw(Graphics2D g) {
+    double z = scene.getCam().getZoom();
+    double conX = scene.getCam().conX();
+    double conY = scene.getCam().conY();
     g.setColor(Color.gray);
     g.fill(new Ellipse2D.Double((position.x-width/2)*z-conX, (position.y-width/2)*z-conY, width*z, width*z));
     // g.fill(new Ellipse2D.Double((position.x-RANGE)*z-conX, (position.y-RANGE)*z-conY, RANGE*2*z, RANGE*2*z));

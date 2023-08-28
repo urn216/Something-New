@@ -2,7 +2,6 @@ package code.world.fixed.dividers;
 
 import mki.math.vector.Vector2;
 
-import code.world.Camera;
 import code.world.Collider;
 import code.world.Tile;
 import code.world.fixed.Direction;
@@ -50,10 +49,11 @@ public class Wall extends WorldObject {
     colliders.add(new Collider.Square(new Vector2(), width-thickness/4, height-thickness/4, true, this));
   }
   
-  public void draw(Graphics2D g, Camera cam) {
-    double z = cam.getZoom();
-    double conX = cam.conX();
-    double conY = cam.conY();
+  @Override
+  public void draw(Graphics2D g) {
+    double z = scene.getCam().getZoom();
+    double conX = scene.getCam().conX();
+    double conY = scene.getCam().conY();
     for (Collider coll : colliders) {
       Collider.Square collider = (Collider.Square) coll;
       g.setColor(col);

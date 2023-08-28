@@ -37,7 +37,7 @@ public class Gun extends Item {
   * Constructor for Guns with no secondary fire
   *
   * @param parent The rigidbody holding the gun
-  * @param v the speed of the projectile shot by the gun
+  * @param v the speed of the projectile shot by the gun (u/s)
   * @param num the number of projectiles per shot
   * @param lifetime The number of frames the shot bullet exists for
   * @param coold The number of milliseconds before another shot can fire
@@ -66,10 +66,37 @@ public class Gun extends Item {
     this(parent, (g, u)->{}, v, num, lifetime, coold, dmg, acc, auto, second);
   }
 
+  /**
+   * Constructor for Guns with a custom reticle
+   * 
+   * @param parent The rigidbody holding the gun
+   * @param reticleDrawer The reticle of this gun
+   * @param v the speed of the projectile shot by the gun (u/s)
+   * @param num the number of projectiles per shot
+   * @param lifetime The number of milliseconds the shot bullet exists for
+   * @param coold The number of milliseconds before another shot can fire
+   * @param dmg The damage done by each projectile
+   * @param acc The percent accuracy of each projectile
+   * @param auto Whether or not the gun is full auto
+   */
   public Gun(RigidBody parent, BiConsumer<Graphics2D, Vector2> reticleDrawer, double v, int num, int lifetime, int coold, double dmg, double acc, boolean auto) {
     this(parent, reticleDrawer, v, num, lifetime, coold, dmg, acc, auto, null);
   }
 
+  /**
+   * Constructor for Guns with a secondary fire mode and a custom reticle
+   * 
+   * @param parent The rigidbody holding the gun
+   * @param reticleDrawer The reticle of this gun
+   * @param v the speed of the projectile shot by the gun (u/s)
+   * @param num the number of projectiles per shot
+   * @param lifetime The number of milliseconds the shot bullet exists for
+   * @param coold The number of milliseconds before another shot can fire
+   * @param dmg The damage done by each projectile
+   * @param acc The percent accuracy of each projectile
+   * @param auto Whether or not the gun is full auto
+   * @param second The secondary fire mode for the gun
+   */
   public Gun(RigidBody parent, BiConsumer<Graphics2D, Vector2> reticleDrawer, double v, int num, int lifetime, int coold, double dmg, double acc, boolean auto, Item second) {
     this.parent = parent;
 
@@ -106,8 +133,7 @@ public class Gun extends Item {
     if (currentShot - lastShot < cooldown) return;
     lastShot = currentShot;
 
-    Vector2 position = parent.getPos();
-    Vector2 bDir = new Vector2(usePos.x-position.x, usePos.y-position.y).unitize();
+    Vector2 bDir = usePos.subtract(parent.getPos()).unitize();
     for (int i = 0; i < projCount; i++) {
       Vector2 bRan = Vector2.fromAngle(Math.atan2(bDir.y, bDir.x)+(Math.random()*2-1)*Math.PI*accuracy, Math.random()*(projVelocity/10)+projVelocity-(projVelocity/20));
       parent.getScene().addBullet(new Bullet(parent, bRan, projLifetime, damage));

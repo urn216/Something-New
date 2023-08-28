@@ -2,7 +2,6 @@ package code.world.fixed;
 
 import mki.math.vector.Vector2;
 
-import code.world.Camera;
 import code.world.Collider;
 import code.world.RigidBody;
 import code.world.Tile;
@@ -75,11 +74,11 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject> 
     this.col = col;
   }
 
-  public void draw(Graphics2D g, Camera cam) {
+  public void draw(Graphics2D g) {
     g.setColor(col);
-    g.fill(new Rectangle2D.Double(origin.x-cam.conX(), origin.y-cam.conY(), width, height));
+    g.fill(new Rectangle2D.Double(origin.x-scene.getCam().conX(), origin.y-scene.getCam().conY(), width, height));
     g.setColor(Color.black);
-    g.draw(new Rectangle2D.Double(origin.x-cam.conX(), origin.y-cam.conY(), width, height));
+    g.draw(new Rectangle2D.Double(origin.x-scene.getCam().conX(), origin.y-scene.getCam().conY(), width, height));
   }
 
   public String toString() {

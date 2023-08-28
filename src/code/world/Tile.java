@@ -194,25 +194,25 @@ public class Tile {
     g.fill(new Rectangle2D.Double(origin.x*z-cam.conX(), origin.y*z-cam.conY(), TILE_SIZE*z, TILE_SIZE*z));
   }
 
-  public void drawLowerObjects(Graphics2D g, Camera cam) {
+  public void drawLowerObjects(Graphics2D g) {
 
   }
 
-  public void drawUnits(Graphics2D g, Camera cam) {
+  public void drawUnits(Graphics2D g) {
     for (int i = 0; i < units.size(); i++) {
-      units.get(i).draw(g, cam);
+      units.get(i).draw(g);
     }
   }
 
-  public void drawBullets(Graphics2D g, Camera cam) {
+  public void drawBullets(Graphics2D g) {
     for (int i = 0; i < bullets.size(); i++) {
-      bullets.get(i).draw(g, cam);
+      bullets.get(i).draw(g);
     }
   }
 
-  public void drawHigherObjects(Graphics2D g, Camera cam) {
+  public void drawHigherObjects(Graphics2D g) {
     for (int i = 0; i < fixedObj.size(); i++) {
-      fixedObj.get(i).draw(g, cam);
+      fixedObj.get(i).draw(g);
     }
   }
 }

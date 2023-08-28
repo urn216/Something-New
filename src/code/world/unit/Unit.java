@@ -2,7 +2,6 @@ package code.world.unit;
 
 import mki.math.vector.Vector2;
 
-import code.world.Camera;
 import code.world.Collider;
 import code.world.RigidBody;
 import code.world.fixed.WorldObject;
@@ -47,29 +46,29 @@ public abstract class Unit implements RigidBody {
   protected double hitPoints;
   protected int hurtFrames;
 
-  public Unit(Scene scene, int size, 
+  public Unit(Scene scene, int radius, 
               Vector2 position, Vector2 direction, 
               double walkF, double vMax, double m, double hitPoints, float elasticity) {
-    this(scene, size, position, direction, new Vector2(), new Vector2(), walkF, vMax, m, hitPoints, elasticity);
+    this(scene, radius, position, direction, new Vector2(), new Vector2(), walkF, vMax, m, hitPoints, elasticity);
   }
 
-  public Unit(Scene scene, int size, Color colour,
+  public Unit(Scene scene, int radius, Color colour,
               Vector2 position, Vector2 direction, 
               double walkF, double vMax, double m, double hitPoints, float elasticity) {
-    this(scene, size, colour, position, direction, new Vector2(), new Vector2(), walkF, vMax, m, hitPoints, elasticity);
+    this(scene, radius, colour, position, direction, new Vector2(), new Vector2(), walkF, vMax, m, hitPoints, elasticity);
   }
 
-  public Unit(Scene scene, int size,
+  public Unit(Scene scene, int radius,
               Vector2 position, Vector2 direction, Vector2 v, Vector2 a, 
               double walkF, double vMax, double m, double hitPoints, float elasticity) {
-    this(scene, size, Color.white, position, direction, v, a, walkF, vMax, m, hitPoints, elasticity);
+    this(scene, radius, Color.white, position, direction, v, a, walkF, vMax, m, hitPoints, elasticity);
   }
 
-  public Unit(Scene scene, int size, Color colour,
+  public Unit(Scene scene, int radius, Color colour,
               Vector2 position, Vector2 direction, Vector2 v, Vector2 a, 
               double walkF, double vMax, double m, double hitPoints, float elasticity) {
     this.scene = scene;
-    this.collider = new Collider.Round(new Vector2(), size, true, this);
+    this.collider = new Collider.Round(new Vector2(), radius, true, this);
     this.colour = colour;
     this.position = position;
     this.direction = direction;
@@ -225,10 +224,10 @@ public abstract class Unit implements RigidBody {
     return this.getClass().getSimpleName()+" "+position.x+" "+position.y;
   }
 
-  public void draw(Graphics2D g, Camera cam) {
-    double z = cam.getZoom();
-    double conX = cam.conX();
-    double conY = cam.conY();
+  public void draw(Graphics2D g) {
+    double z = scene.getCam().getZoom();
+    double conX = scene.getCam().conX();
+    double conY = scene.getCam().conY();
     Vector2 pos = collider.getPos();
     double rad = collider.getRadius();
     g.setColor(!alive || hurtFrames > 0 ? Color.pink : colour);
