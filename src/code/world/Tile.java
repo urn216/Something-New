@@ -188,15 +188,31 @@ public class Tile {
     g.draw(new Rectangle2D.Double(origin.x*z-conX, origin.y*z-conY, TILE_SIZE*z, TILE_SIZE*z));
   }
 
-  public void drawDecor(Graphics2D g, Camera cam) {
-    for (WorldObject obj : fixedObj) {
-      obj.draw(g, cam);
+  public void drawGhost(Graphics2D g, Camera cam, Color ghostColour) {
+    double z = cam.getZoom();
+    g.setColor(ghostColour);
+    g.fill(new Rectangle2D.Double(origin.x*z-cam.conX(), origin.y*z-cam.conY(), TILE_SIZE*z, TILE_SIZE*z));
+  }
+
+  public void drawLowerObjects(Graphics2D g, Camera cam) {
+
+  }
+
+  public void drawUnits(Graphics2D g, Camera cam) {
+    for (int i = 0; i < units.size(); i++) {
+      units.get(i).draw(g, cam);
     }
-    for (Bullet b : bullets) {
-      b.draw(g, cam);
+  }
+
+  public void drawBullets(Graphics2D g, Camera cam) {
+    for (int i = 0; i < bullets.size(); i++) {
+      bullets.get(i).draw(g, cam);
     }
-    for (Unit unit : units) {
-      unit.draw(g, cam);
+  }
+
+  public void drawHigherObjects(Graphics2D g, Camera cam) {
+    for (int i = 0; i < fixedObj.size(); i++) {
+      fixedObj.get(i).draw(g, cam);
     }
   }
 }

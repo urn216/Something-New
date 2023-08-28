@@ -28,23 +28,59 @@ public abstract class Unit implements RigidBody {
 
   protected boolean alive = true;
 
+  protected final List<WorldObject> triggering = new ArrayList<>();
+
   protected Vector2 position;
-  protected Vector2 direction = new Vector2();
-  protected Vector2 v = new Vector2();
-  protected Vector2 a = new Vector2();
+  protected Vector2 direction;
+  protected Vector2 v;
+  protected Vector2 a;
   protected Vector2 addAcc = new Vector2();
   protected Collider.Round collider;
-  protected List<WorldObject> triggering;
   protected boolean updated = false;
   protected double walkF;
   protected double vMax;
   protected double m;
-  protected float bounceAmount = 0f;
+  protected float elasticity = 0f;
 
-  protected Color col = Color.white;
+  protected Color colour;
 
   protected double hitPoints;
   protected int hurtFrames;
+
+  public Unit(Scene scene, int size, 
+              Vector2 position, Vector2 direction, 
+              double walkF, double vMax, double m, double hitPoints, float elasticity) {
+    this(scene, size, position, direction, new Vector2(), new Vector2(), walkF, vMax, m, hitPoints, elasticity);
+  }
+
+  public Unit(Scene scene, int size, Color colour,
+              Vector2 position, Vector2 direction, 
+              double walkF, double vMax, double m, double hitPoints, float elasticity) {
+    this(scene, size, colour, position, direction, new Vector2(), new Vector2(), walkF, vMax, m, hitPoints, elasticity);
+  }
+
+  public Unit(Scene scene, int size,
+              Vector2 position, Vector2 direction, Vector2 v, Vector2 a, 
+              double walkF, double vMax, double m, double hitPoints, float elasticity) {
+    this(scene, size, Color.white, position, direction, v, a, walkF, vMax, m, hitPoints, elasticity);
+  }
+
+  public Unit(Scene scene, int size, Color colour,
+              Vector2 position, Vector2 direction, Vector2 v, Vector2 a, 
+              double walkF, double vMax, double m, double hitPoints, float elasticity) {
+    this.scene = scene;
+    this.collider = new Collider.Round(new Vector2(), size, true, this);
+    this.colour = colour;
+    this.position = position;
+    this.direction = direction;
+    this.v = v;
+    this.a = a;
+    this.walkF = walkF;
+    this.vMax = vMax;
+    this.m = m;
+    this.hitPoints = hitPoints;
+    this.elasticity = elasticity;
+  }
 
   public Vector2 getPos() {return position;}
 
@@ -127,7 +163,7 @@ public abstract class Unit implements RigidBody {
     if (collided != null) {
       position = new Vector2(collided.getPos().x-collider.snapTo(collided, true)*Math.signum(v.x), position.y);
       Vector2 dir = new Vector2(collided.getClosest().subtract(collider.getPos()).unitize());
-      v = v.subtract(dir.scale(dir.dot(v)*(1+bounceAmount)));
+      v = v.subtract(dir.scale(dir.dot(v)*(1+elasticity)));
     }
   }
 
@@ -137,7 +173,7 @@ public abstract class Unit implements RigidBody {
     if (collided != null) {
       position = new Vector2(position.x, collided.getPos().y-collider.snapTo(collided, false)*Math.signum(v.y));
       Vector2 dir = new Vector2(collided.getClosest().subtract(collider.getPos()).unitize());
-      v = v.subtract(dir.scale(dir.dot(v)*(1+bounceAmount)));
+      v = v.subtract(dir.scale(dir.dot(v)*(1+elasticity)));
     }
   }
 
@@ -195,7 +231,7 @@ public abstract class Unit implements RigidBody {
     double conY = cam.conY();
     Vector2 pos = collider.getPos();
     double rad = collider.getRadius();
-    g.setColor(!alive || hurtFrames > 0 ? Color.pink : col);
+    g.setColor(!alive || hurtFrames > 0 ? Color.pink : colour);
     g.fill(new Ellipse2D.Double((pos.x-rad)*z-conX, (pos.y-rad)*z-conY, rad*2*z, rad*2*z));
     g.drawLine(
       (int)(pos.x*z-conX), 

@@ -1,7 +1,7 @@
 package code.world.unit;
 
 import mki.math.vector.Vector2;
-
+import code.core.Core;
 import code.world.Collider;
 import code.world.RigidBody;
 
@@ -22,17 +22,17 @@ import java.util.*;
 public class ItemUnit extends Unit {
 
   public ItemUnit(double X, double Y, Scene scene) {
-    position = new Vector2(X, Y);
-    direction = new Vector2();
-    v = new Vector2();
-
-    m = 40;
-    walkF = 0;
-    triggering = new ArrayList<WorldObject>();
-    this.scene = scene;
-    this.hitPoints = 1;
-
-    collider = new Collider.Round(new Vector2(), 4, false, this);
+    super(
+      scene,                            //scene
+      4,                                //size
+      new Vector2(X, Y),                //pos
+      new Vector2(),                    //dir
+      0,                                //walk-force
+      240/Core.TICKS_PER_SECOND,        //max-velocity
+      40,                               //mass
+      1,                                //hitpoints
+      0                                 //elasticity
+    );
   }
 
   public void update(List<WorldObject> objs, List<RigidBody> rbs) {

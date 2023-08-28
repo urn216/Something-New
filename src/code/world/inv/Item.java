@@ -1,5 +1,7 @@
 package code.world.inv;
 
+import java.awt.Graphics2D;
+
 import mki.math.vector.Vector2;
 
 import code.world.RigidBody;
@@ -59,4 +61,11 @@ public abstract class Item {
   * @param usePos The point in the scene to perform the function at
   */
   public abstract void secondUse(Vector2 usePos);
+
+  /**
+   * Draws a reticle to the screen if needed
+   * 
+   * @param usePos The point in the scene to perform the function at
+   */
+  public abstract void drawReticle(Graphics2D g, Vector2 usePos);
 }

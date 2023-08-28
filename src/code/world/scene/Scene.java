@@ -22,6 +22,7 @@ import code.world.unit.TestAI;
 import code.world.unit.Unit;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.awt.Graphics2D;
 
 /**
@@ -85,8 +86,16 @@ public class Scene {
   public Camera getCam() {
     return cam;
   }
+
+  public Vector2 getCursorWorldPos() {
+    return Core.getCursorScreenPos().add(cam.conX(), cam.conY()).scale(1/cam.getZoom());
+  }
   
-  public Tile getTile(Vector2 p) {return map[(int)(p.x/Tile.TILE_SIZE+mapSX/2)][(int)(p.y/Tile.TILE_SIZE+mapSY/2)];}
+  public Tile getTile(Vector2 p) {
+    int x = Math.max(Math.min((int)(p.x/Tile.TILE_SIZE+mapSX/2), mapSX-1), 0);
+    int y = Math.max(Math.min((int)(p.y/Tile.TILE_SIZE+mapSY/2), mapSY-1), 0);
+    return map[x][y];
+  }
   
   public void addBullet(Bullet b) {
     bullets.add(b);
@@ -146,15 +155,20 @@ public class Scene {
     int bottom = Math.min((int)((cam.getPos().y+halfH)/Tile.TILE_SIZE + mapSY/2)+1, mapSY);
     
     if (drawInterior) {
-      for (int i = left; i < right; i++) {
-        for (int j = top; j < bottom; j++) {
-          map[i][j].draw(g, cam);
-        }
-      }
-      for (int i = left; i < right; i++) {
-        for (int j = top; j < bottom; j++) {
-          map[i][j].drawDecor(g, cam);
-        }
+      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].draw(g, cam));
+      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawLowerObjects(g, cam));
+      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawUnits(g, cam));
+      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawBullets(g, cam));
+      onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawHigherObjects(g, cam));
+
+      player.drawReticle(g, cam);
+    }
+  }
+
+  private void onEachTile(int left, int right, int top, int bottom, BiConsumer<Integer, Integer> action) {
+    for (int i = left; i < right; i++) {
+      for (int j = top; j < bottom; j++) {
+        action.accept(i, j);
       }
     }
   }

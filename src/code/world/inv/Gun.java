@@ -1,10 +1,16 @@
 package code.world.inv;
 
+import java.awt.Graphics2D;
+
 import mki.math.MathHelp;
 
 import mki.math.vector.Vector2;
 
 import code.world.RigidBody;
+
+import java.util.function.BiConsumer;
+
+import code.core.Core;
 import code.world.Bullet;
 
 /**
@@ -13,6 +19,8 @@ import code.world.Bullet;
 public class Gun extends Item {
 
   protected final Item secondary;
+
+  protected final BiConsumer<Graphics2D, Vector2> reticleDrawer;
 
   protected final double accuracy;
   protected final double projVelocity;
@@ -45,9 +53,9 @@ public class Gun extends Item {
   * Constructor for Guns with a secondary fire mode
   *
   * @param parent The rigidbody holding the gun
-  * @param v the speed of the projectile shot by the gun
+  * @param v the speed of the projectile shot by the gun (u/s)
   * @param num the number of projectiles per shot
-  * @param lifetime The number of frames the shot bullet exists for
+  * @param lifetime The number of milliseconds the shot bullet exists for
   * @param coold The number of milliseconds before another shot can fire
   * @param dmg The damage done by each projectile
   * @param acc The percent accuracy of each projectile
@@ -55,16 +63,26 @@ public class Gun extends Item {
   * @param second The secondary fire mode for the gun
   */
   public Gun(RigidBody parent, double v, int num, int lifetime, int coold, double dmg, double acc, boolean auto, Item second) {
+    this(parent, (g, u)->{}, v, num, lifetime, coold, dmg, acc, auto, second);
+  }
+
+  public Gun(RigidBody parent, BiConsumer<Graphics2D, Vector2> reticleDrawer, double v, int num, int lifetime, int coold, double dmg, double acc, boolean auto) {
+    this(parent, reticleDrawer, v, num, lifetime, coold, dmg, acc, auto, null);
+  }
+
+  public Gun(RigidBody parent, BiConsumer<Graphics2D, Vector2> reticleDrawer, double v, int num, int lifetime, int coold, double dmg, double acc, boolean auto, Item second) {
     this.parent = parent;
 
-    projVelocity = v;
-    projCount = num;
-    projLifetime = lifetime;
-    cooldown = coold;
-    damage = dmg;
-    accuracy = MathHelp.clamp(0.5-(acc/2), 0, 1);
-    fullAuto = auto;
-    secondary = second;
+    this.reticleDrawer = reticleDrawer;
+
+    this.projVelocity = v/Core.TICKS_PER_SECOND;
+    this.projCount = num;
+    this.projLifetime = (int)(lifetime/Core.MILLISECONDS_PER_TICK);
+    this.cooldown = (int)(coold/Core.MILLISECONDS_PER_TICK);
+    this.damage = dmg;
+    this.accuracy = MathHelp.clamp(0.5-(acc/2), 0, 1);
+    this.fullAuto = auto;
+    this.secondary = second;
   }
 
   @Override
@@ -84,7 +102,7 @@ public class Gun extends Item {
 
   @Override
   public void primeUse(Vector2 usePos) {
-    long currentShot = System.currentTimeMillis();
+    long currentShot = Core.currentTicks();
     if (currentShot - lastShot < cooldown) return;
     lastShot = currentShot;
 
@@ -99,5 +117,10 @@ public class Gun extends Item {
   @Override
   public void secondUse(Vector2 usePos) {
     secondary.primeUse(usePos);
+  }
+
+  @Override
+  public void drawReticle(Graphics2D g, Vector2 usePos) {
+    reticleDrawer.accept(g, usePos);
   }
 }

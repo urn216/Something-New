@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import mki.io.FileIO;
-
+import mki.math.vector.Vector2I;
 import mki.ui.control.UIController;
 import mki.ui.control.UIState;
 
@@ -45,17 +45,19 @@ public abstract class Core {
   private static String newSaveName = null;
   private static String sceneTransitionName;
 
-  private static final double TICKS_PER_SECOND = 30;
-  private static final double MILLISECONDS_PER_TICK = 1000/TICKS_PER_SECOND;
+  public static final double TICKS_PER_SECOND = 60;
+  public static final double MILLISECONDS_PER_TICK = 1000/TICKS_PER_SECOND;
   
   private static final long START_TIME = System.currentTimeMillis();
   private static final int SPLASH_TIME = 1000;
   
   private static final Decal SPLASH;
 
+  private static long tickCount = 0;
+
   private static int sceneTransitionCounter;
-  private static final int SceneTransitionLimit = 30;
-  private static boolean SceneTransitionFirstHalf = true;
+  private static final int sceneTransitionLimit = (int)TICKS_PER_SECOND;
+  private static boolean sceneTransitionFirstHalf = true;
 
   // int pauseCool = 0;
   private static int deathTime = 0;
@@ -101,6 +103,14 @@ public abstract class Core {
     return currentScene == null ? null : currentScene.getCam();
   }
 
+  public static Vector2I getCursorScreenPos() {
+    return Controls.mousePos;
+  }
+
+  public static long currentTicks() {
+    return tickCount;
+  }
+
   /**
   * Switches the current scene to a new one via the new scene's name
   *
@@ -111,7 +121,7 @@ public abstract class Core {
     sceneTransitionName = name;
     sceneTransitionCounter = 0;
     state = State.TRANSITION;
-    SceneTransitionFirstHalf = true;
+    sceneTransitionFirstHalf = true;
   }
 
   /**
@@ -120,7 +130,7 @@ public abstract class Core {
   */
   private static void transition() {
     //Half way through total transition. Things should be non-visible
-    if (SceneTransitionFirstHalf) {
+    if (sceneTransitionFirstHalf) {
       Scene temp = previousScene;
       previousScene = currentScene;
       if (sceneTransitionName == null) currentScene = Scene.mainMenu();
@@ -130,7 +140,7 @@ public abstract class Core {
       currentScene.getCam().setZoom(0);
       state = State.TRANSITION;
       sceneTransitionCounter = 0;
-      SceneTransitionFirstHalf = false;
+      sceneTransitionFirstHalf = false;
       return;
     }
     //At the end of the transition. Should be completely in the new scene now
@@ -242,9 +252,13 @@ public abstract class Core {
         Camera cam = currentScene.getCam();
         cam.follow();
         sceneTransitionCounter++;
-        if (SceneTransitionFirstHalf) {cam.setZoom(cam.getZoom()*2.0/3.0);}
-        else {cam.setZoom((Math.pow(2.0, SceneTransitionLimit-sceneTransitionCounter)/Math.pow(3.0, SceneTransitionLimit-sceneTransitionCounter))*cam.getDZoom());}
-        if (sceneTransitionCounter >= SceneTransitionLimit) {transition();}
+        cam.setZoom(cam.getDZoom() *
+          (double)(sceneTransitionFirstHalf ? 
+            sceneTransitionLimit-sceneTransitionCounter : 
+            sceneTransitionCounter
+          )/sceneTransitionLimit
+        );
+        if (sceneTransitionCounter >= sceneTransitionLimit) {transition();}
         break;
       }
       if (quit) {
@@ -252,6 +266,7 @@ public abstract class Core {
       }
       WINDOW.PANEL.repaint();
       tickTime = System.currentTimeMillis() - tickTime;
+      tickCount++;
       try {
         Thread.sleep(Math.max((long)(MILLISECONDS_PER_TICK - tickTime), 0));
       } catch(InterruptedException e){System.out.println(e); System.exit(0);}

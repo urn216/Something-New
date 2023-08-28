@@ -1,9 +1,8 @@
 package code.world.unit;
 
 import mki.math.vector.Vector2;
-
+import code.core.Core;
 import code.world.Collider;
-import code.world.fixed.WorldObject;
 
 import code.world.inv.Gun;
 import code.world.scene.Scene;
@@ -22,21 +21,21 @@ public class TestAI extends Unit {
   /**
   * Constructor for objects of class TestAI
   */
-  public TestAI(double X, double Y, Scene scene)
-  {
-    position = new Vector2(X, Y);
+  public TestAI(double X, double Y, Scene scene) {
+    super(
+      scene,                            //scene
+      8,                                //size
+      Color.getHSBColor((float)Math.random(), 1f, 0.5f),
+      new Vector2(X, Y),                //pos
+      new Vector2(),                    //dir
+      3000/Core.TICKS_PER_SECOND,       //walk-force
+      140/Core.TICKS_PER_SECOND,        //max-velocity
+      100,                              //mass
+      160,                              //hitpoints
+      0                                 //elasticity
+    );
 
-    triggering = new ArrayList<WorldObject>();
-    this.scene = scene;
-    this.hitPoints = 160;
-    walkF = 100;
-    m = 100;
-    vMax = 4;
-
-    this.collider = new Collider.Round(new Vector2(), 8, true, this);
-
-    col = Color.getHSBColor((float)Math.random(), 1f, 0.5f);
-    held = new Gun(this, 40, 1, 30, 160, 30, 0.96, true);
+    held = new Gun(this, 1200, 1, 1000, 160, 30, 0.96, true);
   }
 
   public void move(List<Collider> colliders) {

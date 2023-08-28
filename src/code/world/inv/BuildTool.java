@@ -1,7 +1,11 @@
 package code.world.inv;
 
-import mki.math.vector.Vector2;
+import java.awt.Color;
+import java.awt.Graphics2D;
 
+import mki.math.MathHelp;
+import mki.math.vector.Vector2;
+import code.core.Core;
 import code.world.RigidBody;
 
 /**
@@ -39,5 +43,10 @@ public class BuildTool extends Item {
   */
   public void secondUse(Vector2 usePos) {
     parent.getScene().getTile(usePos).deactivate();
+  }
+
+  @Override
+  public void drawReticle(Graphics2D g, Vector2 usePos) {
+    parent.getScene().getTile(usePos).drawGhost(g, parent.getScene().getCam(), new Color(0, 255, 0, MathHelp.abs((int)(Core.currentTicks()%30)-15)*8+72));
   }
 }
