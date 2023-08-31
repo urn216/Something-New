@@ -20,7 +20,7 @@ import java.awt.Color;
 * @version (a version number or a date)
 */
 public class Tile {
-  public static final double TILE_SIZE = 64;
+  public static final int TILE_SIZE = 64;
 
   private Vector2 position;
   private Vector2 origin;
@@ -42,7 +42,7 @@ public class Tile {
   */
   public Tile(double x, double y, int active) {
     origin = new Vector2(x*TILE_SIZE, y*TILE_SIZE);
-    position = new Vector2(x*TILE_SIZE+TILE_SIZE/2, y*TILE_SIZE+TILE_SIZE/2);
+    position = new Vector2(x*TILE_SIZE+TILE_SIZE/2.0, y*TILE_SIZE+TILE_SIZE/2.0);
     this.active = active != 0 ? true: false;
   }
 
@@ -101,13 +101,13 @@ public class Tile {
     bullets.clear();
     for (Unit unit : allUnits) {
       Vector2 unitPos = unit.getPos();
-      if (unitPos.x >= position.x-TILE_SIZE/2 && unitPos.x < position.x+TILE_SIZE/2 && unitPos.y >= position.y-TILE_SIZE/2 && unitPos.y < position.y+TILE_SIZE/2) {
+      if (unitPos.x >= position.x-TILE_SIZE/2.0 && unitPos.x < position.x+TILE_SIZE/2.0 && unitPos.y >= position.y-TILE_SIZE/2.0 && unitPos.y < position.y+TILE_SIZE/2.0) {
         units.add(unit);
       }
     }
     for (WorldObject obj : objs) {
       Vector2 objPos = obj.getOrigin();
-      if (objPos.x >= position.x-TILE_SIZE/2 && objPos.x < position.x+TILE_SIZE/2 && objPos.y >= position.y-TILE_SIZE/2 && objPos.y < position.y+TILE_SIZE/2) {
+      if (objPos.x >= position.x-TILE_SIZE/2.0 && objPos.x < position.x+TILE_SIZE/2.0 && objPos.y >= position.y-TILE_SIZE/2.0 && objPos.y < position.y+TILE_SIZE/2.0) {
         fixedObj.add(obj);
         // if (obj instanceof Light light) light.calculateShadows(objs);
       }
@@ -146,7 +146,7 @@ public class Tile {
 
   public void update() {
     if (units.isEmpty()&&bullets.isEmpty()) {return;}
-    Vector2 topLeft = new Vector2(position.x-TILE_SIZE/2, position.y-TILE_SIZE/2);
+    Vector2 topLeft = new Vector2(position.x-TILE_SIZE/2.0, position.y-TILE_SIZE/2.0);
     List<WorldObject> nbOs = getNBOs();
     List<RigidBody> rbs = new ArrayList<RigidBody>(units.size()+fixedObj.size());
     rbs.addAll(getNBUs());
@@ -154,7 +154,7 @@ public class Tile {
     for (int i = 0; i<units.size(); i++) {
       Unit unit = units.get(i);
       unit.update(nbOs, rbs);
-      Vector2 unitPos = unit.getPos().subtract(topLeft).scale(1/TILE_SIZE).add(1);
+      Vector2 unitPos = unit.getPos().subtract(topLeft).scale(1.0/TILE_SIZE).add(1);
       int x = (int)MathHelp.clamp(unitPos.x, 0, 2);
       int y = (int)MathHelp.clamp(unitPos.y, 0, 2);
 
@@ -169,7 +169,7 @@ public class Tile {
         b--;
         continue;
       }
-      Vector2 bulletPos = bullet.getPos().subtract(topLeft).scale(1/TILE_SIZE).add(1);
+      Vector2 bulletPos = bullet.getPos().subtract(topLeft).scale(1.0/TILE_SIZE).add(1);
       int x = (int)MathHelp.clamp(bulletPos.x, 0, 2);
       int y = (int)MathHelp.clamp(bulletPos.y, 0, 2);
 

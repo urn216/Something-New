@@ -22,7 +22,8 @@ enum State {
   TRANSITION,
   RUN,
   PAUSE,
-  DEATH, SPLASH
+  DEATH,
+  SPLASH
 }
 
 /**

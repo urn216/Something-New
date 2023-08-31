@@ -34,17 +34,7 @@ public class Player extends Unit {
     );
 
     // held = new Gun(this, 40, 1, 30, 168, 15, 0.96, true);
-    held = new Gun(
-      this,  
-      1200, 
-      1, 
-      1000, 
-      168, 
-      15, 
-      0.96, 
-      true, 
-      new Gun(this, 1200, 10, 150, 500, 16, 0.8, false)
-    );
+    held = new Gun(this, 1200, 1, 1000, 100, 20, 0.96, true, new Gun(this, 1200, 10, 150, 500, 16, 0.8, false));
     // held = new Gun(this, 40, 1, 30, 160, 30, 0.96, true, new GunLauncher(this, new ItemUnit(0, 0, null), 20, 1, 500, 0.96, true));
     // held = new BuildTool(this);
   }

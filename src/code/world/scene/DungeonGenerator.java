@@ -28,8 +28,9 @@ public class DungeonGenerator implements RandomGenerator {
   private static final float INITIAL_FAILURE_CHANCE = 0.0f;
   private static final float ROOM_CONNECTION_CHANCE = 0.25f;
   private static final float TEST_AI_SPAWN_CHANCE = 0.1f;
-  private static final float CREATE_LIGHT_CHANCE = 0.05f;
+  private static final float BROKEN_LIGHT_CHANCE = 0.125f;
 
+  private static final int LIGHT_SPACING = 3;
   private static final int DIRECTION_CHANCES = 4;
 
   private final long seed;
@@ -52,10 +53,12 @@ public class DungeonGenerator implements RandomGenerator {
     Tile[][] map = new Tile[this.width][this.height];
     Set<WorldObject> fixedObj = new HashSet<WorldObject>();
     Set<Unit> units = new HashSet<Unit>();
-    Set<Decal> decals = new HashSet<Decal>();
+    Set<Decal> bgDecals = new HashSet<Decal>();
+    Set<Decal> fgDecals = new HashSet<Decal>();
 
-    Scene result = new Scene(map, fixedObj, units, decals);
-    decals.add(new Decal(1920, 1080, "BG/Space.png", false, result));
+    Scene result = new Scene(map, fixedObj, units, bgDecals, fgDecals);
+    bgDecals.add(new Decal(1920, 1080, "BG/Space.png", false, result));
+    // fgDecals.add(new Decal(Tile.TILE_SIZE/2, Tile.TILE_SIZE/2, "decal/test.png", true, result));
 
     for (int x = 0; x < this.width; x++) {
       for (int y = 0; y < this.height; y++) {
@@ -87,6 +90,8 @@ public class DungeonGenerator implements RandomGenerator {
         }
       }
     }
+
+    fixedObj.add(new Light(0, 0, (rand.nextFloat() > BROKEN_LIGHT_CHANCE), result));
 
     result.player = new Player(Tile.TILE_SIZE/2, Tile.TILE_SIZE/2, result);
     result.cam.setTarU(result.player);
@@ -124,7 +129,7 @@ public class DungeonGenerator implements RandomGenerator {
         map[cX][cY].activate();
         // chance for doors to be added
         if (rand.nextFloat() < TEST_AI_SPAWN_CHANCE) {units.add(new TestAI((cX-width/2)*Tile.TILE_SIZE+Tile.TILE_SIZE/2, (cY-height/2)*Tile.TILE_SIZE+Tile.TILE_SIZE/2, result));}
-        if (rand.nextFloat() < CREATE_LIGHT_CHANCE) {fixedObj.add(new Light(cX-width/2, cY-height/2, result));}
+        if (i%LIGHT_SPACING==0 && j%LIGHT_SPACING==0) {fixedObj.add(new Light(cX-width/2, cY-height/2, (rand.nextFloat() > BROKEN_LIGHT_CHANCE), result));}
         if (i == -(rWidth/2)) {if (!fixedObj.add(new Wall(cX-width/2, cY-height/2, Direction.West, result)) && connect) {fixedObj.remove(new Wall(cX-width/2, cY-height/2, Direction.West, result));}}
         if (i == rWidth/2) {if (!fixedObj.add(new Wall(cX-width/2+1, cY-height/2, Direction.West, result)) && connect) {fixedObj.remove(new Wall(cX-width/2+1, cY-height/2, Direction.West, result));}}
         if (j == -(rHeight/2)) {if (!fixedObj.add(new Wall(cX-width/2, cY-height/2, Direction.North, result)) && connect) {fixedObj.remove(new Wall(cX-width/2, cY-height/2, Direction.North, result));}}

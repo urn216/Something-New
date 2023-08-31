@@ -2,7 +2,11 @@ package code.world.fixed;
 
 public enum Direction {
   North,
+  NorthEast,
   East,
+  SouthEast,
   South,
-  West
+  SouthWest,
+  West,
+  NorthWest
 }

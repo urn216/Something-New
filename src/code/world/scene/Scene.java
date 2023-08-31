@@ -42,17 +42,20 @@ public class Scene {
   protected final Collection<Bullet> bullets;
   protected final Collection<WorldObject> fixedObj;
   protected final Collection<Decal> bgDecals;
+  protected final Collection<Decal> fgDecals;
 
   protected final Camera cam = new Camera(new Vector2(32, 32), new Vector2(), 2);
 
   protected boolean drawInterior = true;
+
+  protected Decal shadowMap;
   
   /**
   * @return the main menu scene singleton
   */
   public static final Menu mainMenu() {return Menu.MENU;}
   
-  Scene(Tile[][] map, Collection<WorldObject> fixedObj, Collection<Unit> units, Collection<Decal> bgDecals) {
+  Scene(Tile[][] map, Collection<WorldObject> fixedObj, Collection<Unit> units, Collection<Decal> bgDecals, Collection<Decal> fgDecals) {
     this.map = map;
     this.mapSX = map.length;
     this.mapSY = mapSX > 0 ? map[0].length : 0;
@@ -61,6 +64,7 @@ public class Scene {
     this.units = units;
     this.bullets = new HashSet<>();
     this.bgDecals = bgDecals;
+    this.fgDecals = fgDecals;
   }
   
   public void reset() {
@@ -85,6 +89,14 @@ public class Scene {
 
   public Camera getCam() {
     return cam;
+  }
+
+  public int getMapSX() {
+    return mapSX;
+  }
+
+  public int getMapSY() {
+    return mapSY;
   }
 
   public Vector2 getCursorWorldPos() {
@@ -114,12 +126,11 @@ public class Scene {
   }
 
   public void bigUpdate() {
-    for (int i = 0; i < mapSY; i++) {
-      for (int j = 0; j < mapSX; j++) {
-        map[j][i].bigUpdate(units, fixedObj);
-        map[j][i].getNeighbours(map, j, i, mapSX, mapSY);
-      }
-    }
+    onEachTile(0, mapSX, 0, mapSY, (i, j) -> {
+      map[j][i].bigUpdate(units, fixedObj);
+      map[j][i].getNeighbours(map, j, i, mapSX, mapSY);
+    });
+    this.shadowMap = (Light.createShadowMap(fixedObj, map, mapSX*Tile.TILE_SIZE, mapSY*Tile.TILE_SIZE));
   }
   
   public void update(boolean[] keys, boolean[] mouse, Vector2 mousePos) {
@@ -158,8 +169,15 @@ public class Scene {
       onEachTile(left, right, top, bottom, (i, j) -> map[i][j].draw(g, cam));
       onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawLowerObjects(g));
       onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawUnits(g));
+
+      if (shadowMap != null) shadowMap.draw(g);
+      
       onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawBullets(g));
       onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawHigherObjects(g));
+
+      for (Decal d : fgDecals) {
+        d.draw(g);
+      }
 
       player.drawReticle(g);
     }
@@ -231,9 +249,9 @@ public class Scene {
       scan.close();
     }
 
-    Scene result = new Scene(map, new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+    Scene result = new Scene(map, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     
-    for (String line : FileIO.readAllLines(directory+"/Decals.txt", fromJar)) {
+    for (String line : FileIO.readAllLines(directory+"/BGDecals.txt", fromJar)) {
       Scanner scan = new Scanner(line);
       String type;
       if (scan.hasNext()) {
@@ -242,6 +260,19 @@ public class Scene {
       else {type = "gap";}
       if (!type.equals("gap")) {
         result.bgDecals.add(new Decal(scan.nextDouble(), scan.nextDouble(), type+"/"+scan.next(), scan.nextBoolean(), result));
+      }
+      scan.close();
+    }
+
+    for (String line : FileIO.readAllLines(directory+"/FGDecals.txt", fromJar)) {
+      Scanner scan = new Scanner(line);
+      String type;
+      if (scan.hasNext()) {
+        type = scan.next();
+      }
+      else {type = "gap";}
+      if (!type.equals("gap")) {
+        result.fgDecals.add(new Decal(scan.nextDouble(), scan.nextDouble(), type+"/"+scan.next(), scan.nextBoolean(), result));
       }
       scan.close();
     }
@@ -263,7 +294,7 @@ public class Scene {
       else {type = "gap";}
       if (type.equals("Wall")) {scene.fixedObj.add(new Wall(scan.nextDouble(), scan.nextDouble(), Direction.valueOf(scan.next()), scene));}
       else if (type.equals("Door")) {scene.fixedObj.add(new Door(scan.nextDouble(), scan.nextDouble(), Direction.valueOf(scan.next()), scene));}
-      else if (type.equals("Light")) {scene.fixedObj.add(new Light(scan.nextDouble(), scan.nextDouble(), scene));}
+      else if (type.equals("Light")) {scene.fixedObj.add(new Light(scan.nextDouble(), scan.nextDouble(), scan.nextBoolean(), scene));}
       scan.close();
     }
     
@@ -304,7 +335,13 @@ public class Scene {
     for (Decal img : scene.bgDecals) {
       b.append(img+"\n");
     }
-    FileIO.saveToFile(directory+"/Decals.txt", b.toString());
+    FileIO.saveToFile(directory+"/BGDecals.txt", b.toString());
+
+    b = new StringBuilder();
+    for (Decal img : scene.fgDecals) {
+      b.append(img+"\n");
+    }
+    FileIO.saveToFile(directory+"/FGDecals.txt", b.toString());
 
     b = new StringBuilder();
     for (WorldObject obj : scene.fixedObj) {

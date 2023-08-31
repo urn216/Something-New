@@ -15,7 +15,8 @@ public class Menu extends Scene {
       new Tile[0][0],
       List.of(),
       List.of(),
-      List.of(new Decal(1920, 1080, "BG/Space.png", false, MENU))
+      List.of(new Decal(1920, 1080, "BG/Space.png", false, MENU)),
+      List.of()
     );
   }
 

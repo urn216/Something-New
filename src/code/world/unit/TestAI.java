@@ -41,11 +41,15 @@ public class TestAI extends Unit {
   public void move(List<Collider> colliders) {
     dirChange --;
     if (dirChange <= 0) {
-      dirChange = (int) (Math.random()*60);
-      direction = new Vector2(Vector2.fromAngle((Math.random()*2-1)*Math.PI, 1));
+      dirChange = (int) (Math.random()*2*Core.TICKS_PER_SECOND);
+      direction = Vector2.fromAngle((Math.random()*2-1)*Math.PI, 1);
     }
 
-    held.primeUse(position.add(direction));
+    Unit target = scene.getPlayer();
+    if (direction.dot(target.getPos().subtract(position)) > 0) {
+      // held.primeUse(target.getPos().add(target.getVel()));
+      held.primeUse(position.add(direction));
+    }
 
     step(colliders);
   }

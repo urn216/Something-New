@@ -22,8 +22,6 @@ public class Door extends WorldObject {
   private boolean highlight;
   private boolean open;
   
-  private double thickness = 10;
-  
   /**
   * Constructor for Door objects
   */
@@ -32,36 +30,36 @@ public class Door extends WorldObject {
     this.direction = direction;
     origin = new Vector2(x*Tile.TILE_SIZE, y*Tile.TILE_SIZE);
     if (direction == Direction.North) {
-      position = new Vector2(x*Tile.TILE_SIZE+Tile.TILE_SIZE/2, y*Tile.TILE_SIZE);
-      width = Tile.TILE_SIZE+thickness;
-      height = thickness;
-      colliders.add(new Collider.Square(new Vector2(-25, 0), 24-thickness/4, height-thickness/4, true, this));
-      colliders.add(new Collider.Square(new Vector2(25, 0), 24-thickness/4, height-thickness/4, true, this));
-      colliders.add(new Collider.Square(new Vector2(), 28.5, height-3.5, true, this));
+      position = new Vector2((x+0.5)*Tile.TILE_SIZE, (y    )*Tile.TILE_SIZE);
+      width = Tile.TILE_SIZE+Wall.WALL_THICKNESS;
+      height = Wall.WALL_THICKNESS;
+      colliders.add(new Collider.Square(new Vector2(-25, 0), 24-Wall.WALL_THICKNESS/4, height-Wall.WALL_THICKNESS/4, true, this));
+      colliders.add(new Collider.Square(new Vector2( 25, 0), 24-Wall.WALL_THICKNESS/4, height-Wall.WALL_THICKNESS/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(), 28.5, height-4, true, this));
     }
     else if (direction == Direction.West) {
-      position = new Vector2(x*Tile.TILE_SIZE, y*Tile.TILE_SIZE+Tile.TILE_SIZE/2);
-      width = thickness;
-      height = Tile.TILE_SIZE+thickness;
-      colliders.add(new Collider.Square(new Vector2(0, -25), width-thickness/4, 24-thickness/4, true, this));
-      colliders.add(new Collider.Square(new Vector2(0, 25), width-thickness/4, 24-thickness/4, true, this));
-      colliders.add(new Collider.Square(new Vector2(), width-3.5, 28.5, true, this));
+      position = new Vector2((x    )*Tile.TILE_SIZE, (y+0.5)*Tile.TILE_SIZE);
+      width = Wall.WALL_THICKNESS;
+      height = Tile.TILE_SIZE+Wall.WALL_THICKNESS;
+      colliders.add(new Collider.Square(new Vector2(0, -25), width-Wall.WALL_THICKNESS/4, 24-Wall.WALL_THICKNESS/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(0,  25), width-Wall.WALL_THICKNESS/4, 24-Wall.WALL_THICKNESS/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(), width-4, 28.5, true, this));
     }
     else if (direction == Direction.South) {
-      position = new Vector2(x*Tile.TILE_SIZE+Tile.TILE_SIZE/2, y*Tile.TILE_SIZE+Tile.TILE_SIZE);
-      width = Tile.TILE_SIZE+thickness;
-      height = thickness;
-      colliders.add(new Collider.Square(new Vector2(-25, 0), 24-thickness/4, height-thickness/4, true, this));
-      colliders.add(new Collider.Square(new Vector2(25, 0), 24-thickness/4, height-thickness/4, true, this));
-      colliders.add(new Collider.Square(new Vector2(), 28.5, height-3.5, true, this));
+      position = new Vector2((x+0.5)*Tile.TILE_SIZE, (y+1  )*Tile.TILE_SIZE);
+      width = Tile.TILE_SIZE+Wall.WALL_THICKNESS;
+      height = Wall.WALL_THICKNESS;
+      colliders.add(new Collider.Square(new Vector2(-25, 0), 24-Wall.WALL_THICKNESS/4, height-Wall.WALL_THICKNESS/4, true, this));
+      colliders.add(new Collider.Square(new Vector2( 25, 0), 24-Wall.WALL_THICKNESS/4, height-Wall.WALL_THICKNESS/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(), 28.5, height-4, true, this));
     }
     else if (direction == Direction.East) {
-      position = new Vector2(x*Tile.TILE_SIZE+Tile.TILE_SIZE, y*Tile.TILE_SIZE+Tile.TILE_SIZE/2);
-      width = thickness;
-      height = Tile.TILE_SIZE+thickness;
-      colliders.add(new Collider.Square(new Vector2(0, -25), width-thickness/4, 24-thickness/4, true, this));
-      colliders.add(new Collider.Square(new Vector2(0, 25), width-thickness/4, 24-thickness/4, true, this));
-      colliders.add(new Collider.Square(new Vector2(), width-3.5, 28.5, true, this));
+      position = new Vector2((x+1  )*Tile.TILE_SIZE, (y+0.5)*Tile.TILE_SIZE);
+      width = Wall.WALL_THICKNESS;
+      height = Tile.TILE_SIZE+Wall.WALL_THICKNESS;
+      colliders.add(new Collider.Square(new Vector2(0, -25), width-Wall.WALL_THICKNESS/4, 24-Wall.WALL_THICKNESS/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(0,  25), width-Wall.WALL_THICKNESS/4, 24-Wall.WALL_THICKNESS/4, true, this));
+      colliders.add(new Collider.Square(new Vector2(), width-4, 28.5, true, this));
     }
     colliders.add(new Collider.Square(new Vector2(), Tile.TILE_SIZE/2, Tile.TILE_SIZE/2, false, this));
   }
@@ -103,7 +101,7 @@ public class Door extends WorldObject {
     for (Collider col : colliders) {
       Collider.Square collider = (Collider.Square) col;
       if (collider.isSolid()) {
-        g.setColor(Color.gray);
+        g.setColor(Wall.WALL_COLOUR);
         g.fill(new Rectangle2D.Double((collider.getPos().x-collider.getWidth()/2)*z-conX, (collider.getPos().y-collider.getHeight()/2)*z-conY, collider.getWidth()*z, collider.getHeight()*z));
         g.setColor(Color.black);
         g.draw(new Rectangle2D.Double((collider.getPos().x-collider.getWidth()/2)*z-conX, (collider.getPos().y-collider.getHeight()/2)*z-conY, collider.getWidth()*z, collider.getHeight()*z));
@@ -114,11 +112,11 @@ public class Door extends WorldObject {
       g.setColor(Color.white);
       g.draw(new Rectangle2D.Double((door.getPos().x-door.getWidth()/2)*z-conX, (door.getPos().y-door.getHeight()/2)*z-conY, door.getWidth()*z, door.getHeight()*z));
     }
-    g.setColor(Color.gray);
-    g.fill(new Rectangle2D.Double((position.x-width/2)*z-conX, (position.y-height/2)*z-conY, thickness*z, thickness*z));
-    g.fill(new Rectangle2D.Double((position.x+width/2-thickness)*z-conX, (position.y+height/2-thickness)*z-conY, thickness*z, thickness*z));
+    g.setColor(Wall.WALL_COLOUR);
+    g.fill(new Rectangle2D.Double((position.x-width/2)*z-conX, (position.y-height/2)*z-conY, Wall.WALL_THICKNESS*z, Wall.WALL_THICKNESS*z));
+    g.fill(new Rectangle2D.Double((position.x+width/2-Wall.WALL_THICKNESS)*z-conX, (position.y+height/2-Wall.WALL_THICKNESS)*z-conY, Wall.WALL_THICKNESS*z, Wall.WALL_THICKNESS*z));
     g.setColor(Color.black);
-    g.draw(new Rectangle2D.Double((position.x-width/2)*z-conX, (position.y-height/2)*z-conY, thickness*z, thickness*z));
-    g.draw(new Rectangle2D.Double((position.x+width/2-thickness)*z-conX, (position.y+height/2-thickness)*z-conY, thickness*z, thickness*z));
+    g.draw(new Rectangle2D.Double((position.x-width/2)*z-conX, (position.y-height/2)*z-conY, Wall.WALL_THICKNESS*z, Wall.WALL_THICKNESS*z));
+    g.draw(new Rectangle2D.Double((position.x+width/2-Wall.WALL_THICKNESS)*z-conX, (position.y+height/2-Wall.WALL_THICKNESS)*z-conY, Wall.WALL_THICKNESS*z, Wall.WALL_THICKNESS*z));
   }
 }
