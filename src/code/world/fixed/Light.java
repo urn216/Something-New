@@ -2,9 +2,12 @@ package code.world.fixed;
 
 import code.world.Ray;
 import mki.math.vector.Vector2;
-
+import mki.math.vector.Vector3;
+import mki.math.vector.Vector3I;
 import code.world.Collider;
 import code.world.Tile;
+import mki.world.Material;
+import mki.world.object.primitive.Cube;
 import code.world.Collider.Round;
 import code.world.fixed.dividers.Wall;
 import code.world.scene.Scene;
@@ -37,7 +40,8 @@ public class Light extends WorldObject {
   public Light(double x, double y, boolean functioning, Scene scene) {
     this.scene = scene;
     this.origin = new Vector2(x*Tile.TILE_SIZE, y*Tile.TILE_SIZE);
-    this.position = origin.add(Tile.TILE_SIZE/2);
+    // Vector2 position = origin.add(Tile.TILE_SIZE/2);
+    this.renderedBody = new Cube(new Vector3(origin.x+Tile.TILE_SIZE/2, 0.5, origin.y+Tile.TILE_SIZE/2), 1, new Material(new Vector3I(150), 0f, new Vector3(100)));
     this.width = 6;
     colliders.add(new Collider.Round(new Vector2(), 5, false, this));
 
@@ -50,6 +54,7 @@ public class Light extends WorldObject {
     List<WorldObject> localObj = new ArrayList<WorldObject>();
     List<Ray> rays = new ArrayList<Ray>();
     double limit = RANGE*RANGE+Tile.TILE_SIZE*Tile.TILE_SIZE;
+    Vector2 position = getPos();
     for (WorldObject obj : objs) {
       if (obj.getPos().subtract(position).magsquare() < limit) {
         localObj.add(obj);
@@ -99,7 +104,7 @@ public class Light extends WorldObject {
     double conX = scene.getCam().conX();
     double conY = scene.getCam().conY();
     g.setColor(this.functioning ? Color.gray : Wall.WALL_COLOUR);
-    g.fill(new Ellipse2D.Double((position.x-width/2)*z-conX, (position.y-width/2)*z-conY, width*z, width*z));
+    g.fill(new Ellipse2D.Double((renderedBody.getPosition().x-width/2)*z-conX, (renderedBody.getPosition().z-width/2)*z-conY, width*z, width*z));
     
     // g.setColor(Color.blue);
     // for (Ray r : rays) {

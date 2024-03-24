@@ -1,7 +1,10 @@
 package code.world.unit;
 
 import mki.math.vector.Vector2;
-
+import mki.math.vector.Vector3;
+import mki.math.vector.Vector3I;
+import mki.world.Material;
+import mki.world.object.primitive.Cube;
 import code.world.Collider;
 import code.world.RigidBody;
 import code.world.fixed.WorldObject;
@@ -21,6 +24,8 @@ import java.awt.Color;
 * @version (a version number or a date)
 */
 public abstract class Unit implements RigidBody {
+  protected final mki.world.RigidBody renderedBody;
+
   protected Scene scene;
 
   protected Item held;
@@ -29,7 +34,6 @@ public abstract class Unit implements RigidBody {
 
   protected final List<WorldObject> triggering = new ArrayList<>();
 
-  protected Vector2 position;
   protected Vector2 direction;
   protected Vector2 v;
   protected Vector2 a;
@@ -70,7 +74,7 @@ public abstract class Unit implements RigidBody {
     this.scene = scene;
     this.collider = new Collider.Round(new Vector2(), radius, true, this);
     this.colour = colour;
-    this.position = position;
+    this.renderedBody = new Cube(new Vector3(position.x, 0.5, position.y), 1, new Material(new Vector3I(colour.getRed(), colour.getGreen(), colour.getBlue()), 0f, new Vector3()));
     this.direction = direction;
     this.v = v;
     this.a = a;
@@ -81,7 +85,7 @@ public abstract class Unit implements RigidBody {
     this.elasticity = elasticity;
   }
 
-  public Vector2 getPos() {return position;}
+  public Vector2 getPos() {return new Vector2(renderedBody.getPosition().x, renderedBody.getPosition().z);}
 
   public Vector2 getDir() {return direction;}
 
@@ -97,7 +101,11 @@ public abstract class Unit implements RigidBody {
     return List.of(collider);
   }
 
-  public void setPos(Vector2 pos) {position = pos;}
+  public mki.world.RigidBody getRenderedBody() {
+    return renderedBody;
+  }
+
+  public void setPos(Vector2 position) {renderedBody.setPosition(new Vector3(position.x, 0.5, position.y));}
 
   public void setDir(Vector2 dir) {direction = dir;}
 
@@ -146,7 +154,7 @@ public abstract class Unit implements RigidBody {
 
     // if non-solid
     if (!collider.isSolid()) {
-      position = position.add(v);
+      renderedBody.setPosition(renderedBody.getPosition().add(v.x, 0, v.y));
     }
 
     // if solid
@@ -157,20 +165,22 @@ public abstract class Unit implements RigidBody {
   }
 
   private void stepX(List<Collider> colliders) {
-    position = position.add(v.x, 0);
+    renderedBody.setPosition(renderedBody.getPosition().add(v.x, 0, 0));
     Collider collided = collision(colliders, true);
     if (collided != null) {
-      position = new Vector2(collided.getPos().x-collider.snapTo(collided, true)*Math.signum(v.x), position.y);
+      Vector3 position = renderedBody.getPosition();
+      renderedBody.setPosition(new Vector3(collided.getPos().x-collider.snapTo(collided, true)*Math.signum(v.x), position.y, position.z));
       Vector2 dir = new Vector2(collided.getClosest().subtract(collider.getPos()).unitize());
       v = v.subtract(dir.scale(dir.dot(v)*(1+elasticity)));
     }
   }
 
   private void stepY(List<Collider> colliders) {
-    position = position.add(0, v.y);
+    renderedBody.setPosition(renderedBody.getPosition().add(0, 0, v.y));
     Collider collided = collision(colliders, false);
     if (collided != null) {
-      position = new Vector2(position.x, collided.getPos().y-collider.snapTo(collided, false)*Math.signum(v.y));
+      Vector3 position = renderedBody.getPosition();
+      renderedBody.setPosition(new Vector3(position.x, position.y, collided.getPos().y-collider.snapTo(collided, false)*Math.signum(v.y)));
       Vector2 dir = new Vector2(collided.getClosest().subtract(collider.getPos()).unitize());
       v = v.subtract(dir.scale(dir.dot(v)*(1+elasticity)));
     }
@@ -221,7 +231,7 @@ public abstract class Unit implements RigidBody {
   }
 
   public String toString() {
-    return this.getClass().getSimpleName()+" "+position.x+" "+position.y;
+    return this.getClass().getSimpleName()+" "+renderedBody.getPosition().x+" "+renderedBody.getPosition().z;
   }
 
   public void draw(Graphics2D g) {

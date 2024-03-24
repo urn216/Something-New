@@ -46,6 +46,7 @@ public class TestAI extends Unit {
     }
 
     Unit target = scene.getPlayer();
+    Vector2 position = new Vector2(renderedBody.getPosition().x, renderedBody.getPosition().z);
     if (direction.dot(target.getPos().subtract(position)) > 0) {
       // held.primeUse(target.getPos().add(target.getVel()));
       held.primeUse(position.add(direction));

@@ -7,15 +7,16 @@ import mki.ui.components.*;
 import mki.ui.components.interactables.*;
 import mki.ui.control.UIAction;
 import mki.ui.control.UIColours;
+import mki.ui.control.UIColours.ColourSet;
 import mki.ui.control.UIController;
 import mki.ui.control.UIHelp;
 import mki.ui.control.UIPane;
 import mki.ui.control.UIState;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.geom.Rectangle2D;
 
 public class UICreator {
   // private static final UIElement VIRTUAL_KEYBOARD = new ElemKeyboard();
@@ -32,11 +33,11 @@ public class UICreator {
     UIElement title = new UIElement(
     new Vector2(0   , 0),
     new Vector2(0.3, 0.14),
-    new boolean[]{true, false, true, false}
+    UIElement.TRANSITION_SLIDE_UP_LEFT
     ){
       protected void init() {components = new UIComponent[]{new UIText("A Game Title", 0.6, Font.BOLD)};}
-      protected void draw(Graphics2D g, int screenSizeY, Vector2 tL, Vector2 bR, Color[] c, UIInteractable highlighted) {
-        components[0].draw(g, (float)tL.x, (float)tL.y, (float)(bR.x-tL.x), (float)(bR.y-tL.y), c[UIColours.TEXT]);
+      protected void draw(Graphics2D g, int screenSizeY, Vector2 tL, Vector2 bR, ColourSet c) {
+        components[0].draw(g, (float)tL.x, (float)tL.y, (float)(bR.x-tL.x), (float)(bR.y-tL.y), c);
       }
     };
     
@@ -111,13 +112,22 @@ public class UICreator {
     UIElement greyed = new UIElement(
     new Vector2(0,0),
     new Vector2(1, 1),
-    new boolean[]{false, false, false, false}
+    UIElement.TRANSITION_FADE_IN_PLACE
     ){
-      protected void init() {this.backgroundColour = UIColours.SCREEN_TINT;}
-      protected void draw(Graphics2D g, int screenSizeY, Vector2 tL, Vector2 bR, Color[] c, UIInteractable highlighted) {}
+      protected void init() {
+        this.background = new UIComponent(){
+        
+          @Override
+          protected void draw(Graphics2D g, UIColours.ColourSet c) {
+            g.setColor(c.background());
+            g.fill(new Rectangle2D.Double(x, y, width, height));
+          }
+        };
+      }
+      protected void draw(Graphics2D g, int screenSizeY, Vector2 tL, Vector2 bR, ColourSet c) {}
     };
 
-    UIElement health = new ElemList(
+    UIElement health = new ElemListVert(
       new Vector2(0, 0),
       new Vector2(0.05, COMPON_HEIGHT+2*BUFFER_HEIGHT),
       COMPON_HEIGHT,
@@ -126,18 +136,18 @@ public class UICreator {
         new UIComponent() {
 
           @Override
-          protected void draw(Graphics2D g, Color... colours) {
+          protected void draw(Graphics2D g, ColourSet c) {
             Font font = new Font("Copperplate", Font.BOLD, (int) Math.round((height*0.6)));
             FontMetrics metrics = g.getFontMetrics(font);
             g.setFont(font);
-            g.setColor(colours[0]);
+            g.setColor(c.text());
 
             g.drawString(""+Core.getCurrentScene().getPlayer().getHitPoints(), x, y+((height - metrics.getHeight())/2) + metrics.getAscent());
           }
           
         },
       },
-      new boolean[] {true, false, true, false}
+      UIElement.TRANSITION_SLIDE_UP_LEFT
     );
 
     UIElement outPause = centreMenu(
@@ -198,26 +208,26 @@ public class UICreator {
 
 
   private static UIElement leftMenu(Vector2 tl, double w, UIComponent... comps) {
-    return new ElemList(
+    return new ElemListVert(
       tl,
       tl.add(w, UIHelp.calculateListHeight(BUFFER_HEIGHT, UIHelp.calculateComponentHeights(COMPON_HEIGHT, comps))),
       COMPON_HEIGHT,
       BUFFER_HEIGHT,
       comps,
-      new boolean[]{false, false, true, false}
+      UIElement.TRANSITION_SLIDE_LEFT
     );
   }
 
   private static UIElement centreMenu(Vector2 c, double w, UIComponent... comps) {
     double h = UIHelp.calculateListHeight(BUFFER_HEIGHT, UIHelp.calculateComponentHeights(COMPON_HEIGHT, comps));
     Vector2 tl = c.subtract(w/2, h/2);
-    return new ElemList(
+    return new ElemListVert(
       tl,
       tl.add(w, h),
       COMPON_HEIGHT,
       BUFFER_HEIGHT,
       comps,
-      new boolean[]{false, true, true, true}
+      UIElement.TRANSITION_STRETCH_HORIZONTALLY
     );
   }
 
@@ -225,7 +235,7 @@ public class UICreator {
   new Vector2(0.35, 0.5-UIHelp.calculateListHeight(BUFFER_HEIGHT, COMPON_HEIGHT/2, COMPON_HEIGHT)/2),
   new Vector2(0.65, 0.5+UIHelp.calculateListHeight(BUFFER_HEIGHT, COMPON_HEIGHT/2, COMPON_HEIGHT)/2), 
   BUFFER_HEIGHT, 
-  new boolean[]{false, false, false, false}, 
+  UIElement.TRANSITION_SLIDE_DOWN,
   () -> {Core.GLOBAL_SETTINGS.saveChanges();   UIController.retState();},
   () -> {Core.GLOBAL_SETTINGS.revertChanges(); UIController.retState();},
   "Save Changes?"

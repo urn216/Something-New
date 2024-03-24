@@ -2,6 +2,10 @@ package code.world.fixed;
 
 import mki.io.FileIO;
 import mki.math.vector.Vector2;
+import mki.math.vector.Vector3;
+import mki.math.vector.Vector3I;
+import mki.world.Material;
+import mki.world.object.primitive.Quad;
 import code.core.Core;
 import code.world.scene.Scene;
 
@@ -26,21 +30,23 @@ public class Decal extends WorldObject {
   */
   public Decal(double x, double y, String file, boolean pan, Scene scene) {
     this.scene = scene;
-    this.position = new Vector2(x, y);
+    Vector2 position = new Vector2(x, y);
     String[] parts = file.split("/");
     this.type = parts[0];
     this.directory = parts[parts.length-1];
-
+    
     this.img = FileIO.readImage(file);
     this.camPan = pan;
     this.width = img.getWidth();
     this.height = img.getHeight();
     this.origin = new Vector2(x-width/2, y-height/2);
+
+    this.renderedBody = new Quad(new Vector3(position.x, 0.5, position.y), width, 0, height, 1, new Material(new Vector3I(150), 0f, new Vector3()));
   }
 
   public Decal(double x, double y, BufferedImage img, boolean pan, Scene scene) {
     this.scene = scene;
-    this.position = new Vector2(x, y);
+    Vector2 position = new Vector2(x, y);
     this.type = null;
     this.directory = null;
 
@@ -49,6 +55,8 @@ public class Decal extends WorldObject {
     this.width = img.getWidth();
     this.height = img.getHeight();
     this.origin = new Vector2(x-width/2, y-height/2);
+
+    this.renderedBody = new Quad(new Vector3(position.x, 0.5, position.y), width, 0, height, 1, new Material(new Vector3I(150), 0f, new Vector3(0)));
   }
 
   @Override
@@ -76,6 +84,6 @@ public class Decal extends WorldObject {
 
   public String toString() {
     if (type == null) return "";
-    return type+" "+(int)position.x+" "+(int)position.y+" "+directory+" "+camPan;
+    return type+" "+(int)renderedBody.getPosition().x+" "+(int)renderedBody.getPosition().z+" "+directory+" "+camPan;
   }
 }

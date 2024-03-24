@@ -1,7 +1,7 @@
 package code.world.fixed;
 
 import mki.math.vector.Vector2;
-
+import mki.math.vector.Vector3;
 import code.world.Collider;
 import code.world.RigidBody;
 import code.world.Tile;
@@ -20,10 +20,10 @@ import java.awt.Color;
 * @version (a version number or a date)
 */
 public abstract class WorldObject implements RigidBody, Comparable<WorldObject> {
+  protected mki.world.RigidBody renderedBody;
 
   protected Color col = Color.gray;
   protected Direction direction = Direction.North;
-  protected Vector2 position;
   protected Vector2 origin;
   protected double width;
   protected double height;
@@ -32,7 +32,7 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject> 
 
   public Vector2 getOrigin() {return origin;}
 
-  public Vector2 getPos() {return position;}
+  public Vector2 getPos() {return new Vector2(renderedBody.getPosition().x, renderedBody.getPosition().z);}
 
   public Vector2 getVel() {return new Vector2();}
 
@@ -40,11 +40,11 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject> 
 
   public Scene getScene() {return scene;}
 
-  public Tile getTile() {return scene.getTile(position);}
+  public Tile getTile() {return scene.getTile(getPos());}
 
   public void setOrigin(Vector2 pos) {origin = pos;}
 
-  public void setPos(Vector2 pos) {position = pos;}
+  public void setPos(Vector2 position) {renderedBody.setPosition(new Vector3(position.x, 0.5, position.y));}
 
   public void setParent(Scene s) {scene = s;}
 
@@ -61,12 +61,12 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject> 
   public void toggle(Unit user) {}
 
   public void move(double xOff, double yOff) {
-    position = position.add(xOff, yOff);
+    renderedBody.setPosition(renderedBody.getPosition().add(xOff, 0, yOff));
     origin = origin.add(xOff, yOff);
   }
 
   public void move(Vector2 offset) {
-    position = position.add(offset);
+    renderedBody.setPosition(renderedBody.getPosition().add(offset.x, 0, offset.y));
     origin = origin.add(offset);
   }
 
@@ -86,13 +86,13 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject> 
   }
 
   public int hashCode() {
-    return Integer.hashCode(((int)position.x))^Integer.hashCode(((int)position.y))^direction.hashCode();
+    return Integer.hashCode(((int)renderedBody.getPosition().x))^Integer.hashCode(((int)renderedBody.getPosition().z))^direction.hashCode();
   }
 
   public int compareTo(WorldObject other) {
-    int one = Integer.compare((int)position.x, (int)other.position.x);   //this.position.compareTo(other.position);
+    int one = Integer.compare((int)renderedBody.getPosition().x, (int)other.renderedBody.getPosition().x);   //this.position.compareTo(other.position);
     if (one == 0) {
-      one = Integer.compare((int)position.y, (int)other.position.y);
+      one = Integer.compare((int)renderedBody.getPosition().z, (int)other.renderedBody.getPosition().z);
       if (one == 0) {
         one = this.getClass().getName().compareTo(other.getClass().getName());
         if (one == 0) {
@@ -106,6 +106,6 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject> 
   public boolean equals(Object ot) {
     if (ot.getClass()!=this.getClass()) {return false;}
     WorldObject other = (WorldObject)ot;
-    return (int)position.x==(int)other.position.x&&(int)position.y==(int)other.position.y&&direction == other.direction;
+    return (int)renderedBody.getPosition().x==(int)other.renderedBody.getPosition().x&&(int)renderedBody.getPosition().y==(int)other.renderedBody.getPosition().y&&direction == other.direction;
   }
 }
