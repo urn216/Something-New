@@ -52,7 +52,7 @@ public class Camera {
 
   public void setTarU(Unit u) {
     tarU = u;
-    target = u.getPos();
+    target = u.getPosition();
   }
 
   public void setZoom(double z) {
@@ -60,7 +60,7 @@ public class Camera {
   }
 
   public void follow() {
-    if (tarU != null) target = tarU.getPos();
+    if (tarU != null) target = tarU.getPosition();
     if (target != null) {
       Vector2 dist = new Vector2(target.subtract(position));
       if (dist.magsquare() >= 0.1) position = position.add(dist.scale(CLOSE_MAGNITUDE));

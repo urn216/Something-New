@@ -4,6 +4,12 @@ import mki.io.FileIO;
 
 import mki.math.MathHelp;
 import mki.math.vector.Vector2;
+import mki.math.vector.Vector3;
+import mki.math.vector.Vector3I;
+import mki.world.Camera3D;
+import mki.world.Material;
+import mki.world.RigidBody;
+import mki.world.object.primitive.Face;
 import code.core.Core;
 import code.world.Bullet;
 import code.world.Camera;
@@ -14,6 +20,7 @@ import code.world.fixed.Direction;
 import code.world.fixed.dividers.Door;
 import code.world.fixed.Light;
 import code.world.fixed.dividers.Wall;
+import code.world.inv.Gun;
 import code.world.fixed.WorldObject;
 
 import code.world.unit.Dud;
@@ -29,6 +36,7 @@ import java.awt.Graphics2D;
 * Scene class
 */
 public class Scene {
+
   protected String saveName;
   protected String sceneName;
   
@@ -65,13 +73,35 @@ public class Scene {
     this.bullets = new HashSet<>();
     this.bgDecals = bgDecals;
     this.fgDecals = fgDecals;
+
+    generateFloor(mapSX, mapSY);
   }
   
   public void reset() {
     units.clear();
     fixedObj.clear();
     bullets.clear();
+    RigidBody.clearBodies();
+    generateFloor(mapSX, mapSY);
     loadAssets("../saves/"+saveName+"/scenes/"+sceneName, this, false);
+  }
+
+  public static final void generateFloor(int mapSX, int mapSY) {
+    //FLOOR
+    new Face(
+      new Vector3(), 
+      mapSX*Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN, 
+      mapSY*Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN, 
+      new Material(new Vector3I(100), 0f, new Vector3())
+    ).setPitch(90);
+
+    //CEILING
+    new Face(
+      new Vector3(0, Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN/2, 0), 
+      mapSX*Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN, 
+      mapSY*Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN, 
+      new Material(new Vector3I(100), 0f, new Vector3())
+    ).setPitch(-90);
   }
   
   public String getSceneName() {
@@ -85,6 +115,10 @@ public class Scene {
   
   public Unit getPlayer() {
     return player;
+  }
+
+  public Camera3D getPlayerViewPort() {
+    return player.getViewPort();
   }
 
   public Camera getCam() {
@@ -117,7 +151,7 @@ public class Scene {
   
   public void addUnit(Unit u) {
     units.add(u);
-    Vector2 p = u.getPos();
+    Vector2 p = u.getPosition();
     map[(int)(p.x/Tile.TILE_SIZE)+mapSX/2][(int)(p.y/Tile.TILE_SIZE)+mapSY/2].passOff(u);
   }
 
@@ -133,10 +167,10 @@ public class Scene {
     this.shadowMap = (Light.createShadowMap(fixedObj, map, mapSX*Tile.TILE_SIZE, mapSY*Tile.TILE_SIZE));
   }
   
-  public void update(boolean[] keys, boolean[] mouse, Vector2 mousePos) {
+  public void update(boolean[] keys, boolean[] mouse, Vector2 mousePos, Vector2 mouseOff) {
     mousePos = mousePos.add(cam.conX(), cam.conY()).scale(1/cam.getZoom());
     cam.follow();
-    player.input(keys, mouse, mousePos);
+    player.input(keys, mouse, mousePos, mouseOff);
     
     for (int i = 0; i < mapSX; i++) {
       for (int j = 0; j < mapSY; j++) {
@@ -146,12 +180,14 @@ public class Scene {
     Collection<Bullet> toRemove = new HashSet<>();
     for (Bullet b : bullets) {
       b.undone();
-      if(!b.isAlive()) {toRemove.add(b);}
+      if(!b.isAlive()) {toRemove.add(b); RigidBody.removeBody(b.renderedBullet);}
     }
     bullets.removeAll(toRemove);
     for (Unit unit : units) {
       unit.undone();
     }
+
+    if (Core.isRender3D()) player.getViewPort().draw();
   }
   
   public void draw(Graphics2D g) {
@@ -212,6 +248,8 @@ public class Scene {
 
 
   public static Scene load(String saveName, String sceneName) {
+    RigidBody.clearBodies();
+
     Scene res = load("../saves/"+saveName+"/scenes/"+sceneName, false);
     if (res != null) {
       res.saveName = saveName;
@@ -225,6 +263,7 @@ public class Scene {
     res.saveName = saveName;
     res.sceneName = sceneName;
     save(saveName, res);
+    res.reset();
     return res;
   }
   
@@ -306,7 +345,15 @@ public class Scene {
       }
       else {type = "gap";}
       if (type.equals("Player")) {
-        scene.player = new Player(scan.nextDouble(), scan.nextDouble(), scene);
+        scene.player = new Player(
+          scan.nextDouble(), 
+          scan.nextDouble(), 
+          scan.nextDouble(), 
+          scan.nextDouble(), 
+          scan.nextDouble(), 
+          new Gun(1200, 1, 1000, 100, 20, 0.96, true, new Gun(1200, 10, 150, 500, 16, 0.8, false)),
+          scene
+        );
         scene.cam.setTarU(scene.player);
         scene.units.add(scene.player);
       }

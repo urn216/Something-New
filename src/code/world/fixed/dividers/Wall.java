@@ -60,14 +60,14 @@ public class Wall extends WorldObject {
     }
 
     this.renderedBody = new Quad(
-      new Vector3((x+xOff)*Tile.TILE_SIZE, 0, (y+yOff)*Tile.TILE_SIZE), 
-      width, 
-      1,
-      height,
+      new Vector3((x+xOff)*Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN, Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN/4, -(y+yOff)*Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN), 
+      (width -WALL_THICKNESS/4)*Tile.UNIT_SCALE_DOWN, 
+      (       Tile.TILE_SIZE/2)*Tile.UNIT_SCALE_DOWN,
+      (height-WALL_THICKNESS/4)*Tile.UNIT_SCALE_DOWN,
       1,
       new Material(new Vector3I(150), 0f, new Vector3())
     );
-    colliders.add(new Collider.Square(new Vector2(), width-WALL_THICKNESS/4, height-WALL_THICKNESS/4, true, this));
+    colliders.add(new Collider.Square(new Vector2(), width-WALL_THICKNESS/4, height-WALL_THICKNESS/4, Collider.FLAG_SOLID, this));
   }
   
   @Override
@@ -82,13 +82,13 @@ public class Wall extends WorldObject {
       g.setColor(Color.black);
       g.draw(new Rectangle2D.Double((collider.getPos().x-collider.getWidth()/2)*z-conX, (collider.getPos().y-collider.getHeight()/2)*z-conY, (collider.getWidth()*z), (collider.getHeight()*z)));
     }
-    Vector3 position = renderedBody.getPosition();
+    Vector2 position = getPosition();
 
     g.setColor(WALL_COLOUR);
-    g.fill(new Rectangle2D.Double((position.x-width/2)*z-conX, (position.z-height/2)*z-conY, WALL_THICKNESS*z, WALL_THICKNESS*z));
-    g.fill(new Rectangle2D.Double((position.x+width/2-WALL_THICKNESS)*z-conX, (position.z+height/2-WALL_THICKNESS)*z-conY, WALL_THICKNESS*z, WALL_THICKNESS*z));
+    g.fill(new Rectangle2D.Double((position.x-width/2)*z-conX, (position.y-height/2)*z-conY, WALL_THICKNESS*z, WALL_THICKNESS*z));
+    g.fill(new Rectangle2D.Double((position.x+width/2-WALL_THICKNESS)*z-conX, (position.y+height/2-WALL_THICKNESS)*z-conY, WALL_THICKNESS*z, WALL_THICKNESS*z));
     g.setColor(Color.black);
-    g.draw(new Rectangle2D.Double((position.x-width/2)*z-conX, (position.z-height/2)*z-conY, WALL_THICKNESS*z, WALL_THICKNESS*z));
-    g.draw(new Rectangle2D.Double((position.x+width/2-WALL_THICKNESS)*z-conX, (position.z+height/2-WALL_THICKNESS)*z-conY, WALL_THICKNESS*z, WALL_THICKNESS*z));
+    g.draw(new Rectangle2D.Double((position.x-width/2)*z-conX, (position.y-height/2)*z-conY, WALL_THICKNESS*z, WALL_THICKNESS*z));
+    g.draw(new Rectangle2D.Double((position.x+width/2-WALL_THICKNESS)*z-conX, (position.y+height/2-WALL_THICKNESS)*z-conY, WALL_THICKNESS*z, WALL_THICKNESS*z));
   }
 }

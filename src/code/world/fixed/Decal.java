@@ -5,8 +5,10 @@ import mki.math.vector.Vector2;
 import mki.math.vector.Vector3;
 import mki.math.vector.Vector3I;
 import mki.world.Material;
-import mki.world.object.primitive.Quad;
+import mki.world.RigidBody;
+import mki.world.object.primitive.Face;
 import code.core.Core;
+import code.world.Tile;
 import code.world.scene.Scene;
 
 // import java.awt.AlphaComposite;
@@ -25,6 +27,9 @@ public class Decal extends WorldObject {
   private final String type;
   private final String directory;
 
+  private static int stackSize = 0;
+  private static final double LAYER_BUFFER = 0.1;
+
   /**
   * Constructor for Decal objects
   */
@@ -41,7 +46,9 @@ public class Decal extends WorldObject {
     this.height = img.getHeight();
     this.origin = new Vector2(x-width/2, y-height/2);
 
-    this.renderedBody = new Quad(new Vector3(position.x, 0.5, position.y), width, 0, height, 1, new Material(new Vector3I(150), 0f, new Vector3()));
+    this.renderedBody = new Face(new Vector3(position.x*Tile.UNIT_SCALE_DOWN, LAYER_BUFFER*stackSize++, -position.y*Tile.UNIT_SCALE_DOWN), width*Tile.UNIT_SCALE_DOWN, height*Tile.UNIT_SCALE_DOWN, new Material(new Vector3I(150), 0f, new Vector3(), file));
+    this.renderedBody.setPitch(90);
+    RigidBody.removeBody(renderedBody);
   }
 
   public Decal(double x, double y, BufferedImage img, boolean pan, Scene scene) {
@@ -56,7 +63,9 @@ public class Decal extends WorldObject {
     this.height = img.getHeight();
     this.origin = new Vector2(x-width/2, y-height/2);
 
-    this.renderedBody = new Quad(new Vector3(position.x, 0.5, position.y), width, 0, height, 1, new Material(new Vector3I(150), 0f, new Vector3(0)));
+    this.renderedBody = new Face(new Vector3(position.x*Tile.UNIT_SCALE_DOWN, LAYER_BUFFER*stackSize++, -position.y*Tile.UNIT_SCALE_DOWN), width*Tile.UNIT_SCALE_DOWN, height*Tile.UNIT_SCALE_DOWN, new Material(new Vector3I(150), 0f, new Vector3(0)));
+    this.renderedBody.setPitch(90);
+    RigidBody.removeBody(renderedBody);
   }
 
   @Override
@@ -84,6 +93,6 @@ public class Decal extends WorldObject {
 
   public String toString() {
     if (type == null) return "";
-    return type+" "+(int)renderedBody.getPosition().x+" "+(int)renderedBody.getPosition().z+" "+directory+" "+camPan;
+    return type+" "+(int)renderedBody.getPosition().x*Tile.UNIT_SCALE_UP+" "+(int)-renderedBody.getPosition().z*Tile.UNIT_SCALE_UP+" "+directory+" "+camPan;
   }
 }

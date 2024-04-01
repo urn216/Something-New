@@ -1,46 +1,67 @@
 package code.core;
 
 import mki.io.FileIO;
+import mki.ui.control.UIActionSetter;
+import mki.rendering.Constants;
 
 import java.util.List;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 public class Settings {
-  private static final String LOCATION = "../settings.txt";
 
-  private static final String[] DEFAULT_SETTINGS = {
-    "fullScreen" , " " + "true" + "\n",
-    "soundFX",     " " + 100    + "\n",
-    "soundMaster", " " + 100    + "\n",
-    "soundMusic",  " " + 100    + "\n",
-    "subtitles",   " " + 0      + "\n"
+  private static final int I_NAME    = 0;
+  private static final int I_CURRENT = 1;
+  private static final int I_SAVED   = 2;
+  private static final int I_DEFAULT = 3;
+  private static final int I_ACTION  = 4;
+
+
+  private static final String GLOBAL_SETTINGS_LOCATION = "../settings.txt";
+
+  //     NAME        |CURRENT|SAVED|DEFAULT|                       ACTION
+  private static final Object[][] GLOBAL_SETTINGS = {
+    {"s_master"       , 100  , null, 100  , new UIActionSetter<Integer>() {public void set(Integer v) {}}},
+    {"s_FX"           , 100  , null, 100  , new UIActionSetter<Integer>() {public void set(Integer v) {}}},
+    {"s_music"        , 100  , null, 100  , new UIActionSetter<Integer>() {public void set(Integer v) {}}},
+    {"s_subtitles"    , false, null, false, new UIActionSetter<Boolean>() {public void set(Boolean b) {}}},
+    {"v_fullScreen"   , true , null, true , new UIActionSetter<Boolean>() {public void set(Boolean b) {Core.WINDOW.setFullscreen           (b);}}},
+    {"v_3Drendering"  , false, null, false, new UIActionSetter<Boolean>() {public void set(Boolean b) {Core       .setRender3D             (b);}}},
+    {"v_fancylighting", true , null, true , new UIActionSetter<Boolean>() {public void set(Boolean b) {Constants  .setDynamicRasterLighting(b);}}},
   };
 
   private final String fileName;
 
-  private final String[] defaults;
-
-  private final SortedMap<String, String> settings = new TreeMap<String, String>();
-
-  private boolean changed = false;
+  private final Object[][] settings;
 
   /**
    * Initialises the user-defined settings for the program
    */
   public Settings() {
-    this.fileName = LOCATION;
-    this.defaults = DEFAULT_SETTINGS;
+    this.fileName = GLOBAL_SETTINGS_LOCATION;
+    this.settings = GLOBAL_SETTINGS;
     revertChanges();
   }
 
   /**
    * Initialises the user-defined settings for the program
    */
-  public Settings(String fileName, String... settings) {
+  public Settings(String fileName, Object[]... settings) {
     this.fileName = "../" + fileName + ".txt";
-    this.defaults = settings;
+    this.settings = settings;
     revertChanges();
+  }
+
+  /**
+   * Helper method for retrieving the index associated with a given setting name
+   * 
+   * @param name the name of the setting to look for the index of
+   * 
+   * @return the index of the found setting - or {@code -1} if not found
+   */
+  private int getIndex(String name) {
+    for (int i = 0; i < settings.length; i++) {
+      if (((String)settings[i][I_NAME]).equals(name)) return i;
+    }
+    return -1;
   }
 
   /**
@@ -51,7 +72,8 @@ public class Settings {
    * @return the value associated with the desired setting
    */
   public String getStringSetting(String name) {
-    return settings.get(name);
+    int i = getIndex(name);
+    return i < 0 ? null : (String)settings[i][I_CURRENT];
   }
 
   /**
@@ -60,8 +82,13 @@ public class Settings {
    * @param name the name of the setting to alter
    * @param value the value to set the setting to
    */
+  @SuppressWarnings("unchecked")
   public void setStringSetting(String name, String value) {
-    if (!value.equals(settings.replace(name, "" + value))) changed = true;
+    int i = getIndex(name);
+    if (!(settings[i][I_DEFAULT] instanceof String)) return;
+
+    settings[i][I_CURRENT] = value;
+    ((UIActionSetter<String>)settings[i][I_ACTION]).set(value);
   }
 
   /**
@@ -72,7 +99,8 @@ public class Settings {
    * @return the value associated with the desired setting
    */
   public int getIntSetting(String name) {
-    return Integer.parseInt(settings.get(name));
+    int i = getIndex(name);
+    return i < 0 ? 0 : (int)settings[i][I_CURRENT];
   }
 
   /**
@@ -81,8 +109,13 @@ public class Settings {
    * @param name the name of the setting to alter
    * @param value the value to set the setting to
    */
+  @SuppressWarnings("unchecked")
   public void setIntSetting(String name, int value) {
-    if (value != Integer.parseInt(settings.replace(name, "" + value))) changed = true;
+    int i = getIndex(name);
+    if (!(settings[i][I_DEFAULT] instanceof Integer)) return;
+
+    settings[i][I_CURRENT] = value;
+    ((UIActionSetter<Integer>)settings[i][I_ACTION]).set(value);
   }
 
   /**
@@ -93,7 +126,8 @@ public class Settings {
    * @return the value associated with the desired setting
    */
   public double getDoubleSetting(String name) {
-    return Double.parseDouble(settings.get(name));
+    int i = getIndex(name);
+    return i < 0 ? Double.NaN : (double)settings[i][I_CURRENT];
   }
 
   /**
@@ -102,8 +136,13 @@ public class Settings {
    * @param name the name of the setting to alter
    * @param value the value to set the setting to
    */
+  @SuppressWarnings("unchecked")
   public void setDoubleSetting(String name, double value) {
-    if (value != Double.parseDouble(settings.replace(name, "" + value))) changed = true;
+    int i = getIndex(name);
+    if (!(settings[i][I_DEFAULT] instanceof Double)) return;
+
+    settings[i][I_CURRENT] = value;
+    ((UIActionSetter<Double>)settings[i][I_ACTION]).set(value);
   }
 
   /**
@@ -114,7 +153,8 @@ public class Settings {
    * @return the value associated with the desired setting
    */
   public boolean getBoolSetting(String name) {
-    return Boolean.parseBoolean(settings.get(name));
+    int i = getIndex(name);
+    return i < 0 ? false : (boolean)settings[i][I_CURRENT];
   }
 
   /**
@@ -123,8 +163,13 @@ public class Settings {
    * @param name the name of the setting to alter
    * @param value the value to set the setting to
    */
+  @SuppressWarnings("unchecked")
   public void setBoolSetting(String name, boolean value) {
-    if (value != Boolean.parseBoolean(settings.replace(name, value ? "true" : "false"))) changed = true;
+    int i = getIndex(name);
+    if (!(settings[i][I_DEFAULT] instanceof Boolean)) return;
+
+    settings[i][I_CURRENT] = value;
+    ((UIActionSetter<Boolean>)settings[i][I_ACTION]).set(value);
   }
 
   /**
@@ -132,56 +177,91 @@ public class Settings {
    * 
    * @return {@code true} if any settings have been changed
    */
-  public boolean hasChanged() {return changed;}
+  public boolean hasChanged() {
+    for (int i = 0; i < settings.length; i++) {
+      if (!settings[i][I_CURRENT].equals(settings[i][I_SAVED])) return true;
+    }
+    return false;
+  }
 
   /**
    * Saves the current settings to the user's device storage
    */
   public void saveChanges() {
+    for (int i = 0; i < settings.length; i++) {
+      settings[i][I_SAVED] = settings[i][I_CURRENT];
+    }
     FileIO.saveToFile(fileName, toString());
-    changed = false;
   }
 
   /**
    * Reverts the settings to the last saved state, or to the default state if no saved state is found
    */
+  @SuppressWarnings("unchecked")
   public void revertChanges() {
-    if (!FileIO.exists(fileName)) resetToDefault();
-    else load();
+    for (int i = 0; i < settings.length; i++) {
+      settings[i][I_CURRENT] = settings[i][I_SAVED];
+      if      (settings[i][I_CURRENT] instanceof Boolean b) ((UIActionSetter<Boolean>)settings[i][I_ACTION]).set(b);
+      else if (settings[i][I_CURRENT] instanceof Integer l) ((UIActionSetter<Integer>)settings[i][I_ACTION]).set(l);
+      else if (settings[i][I_CURRENT] instanceof Double  d) ((UIActionSetter<Double >)settings[i][I_ACTION]).set(d);
+      else if (settings[i][I_CURRENT] instanceof String  s) ((UIActionSetter<String >)settings[i][I_ACTION]).set(s);
+      else {load(); return;}
+    }
   }
 
   /**
    * Resets the settings to their default state, and saves this default to file
    */
+  @SuppressWarnings("unchecked")
   public void resetToDefault() {
-    FileIO.saveToFile(fileName, defaults);
-    load();
+    for (int i = 0; i < settings.length; i++) {
+      settings[i][I_CURRENT] = settings[i][I_DEFAULT];
+      if      (settings[i][I_CURRENT] instanceof Boolean b) ((UIActionSetter<Boolean>)settings[i][I_ACTION]).set(b);
+      else if (settings[i][I_CURRENT] instanceof Integer l) ((UIActionSetter<Integer>)settings[i][I_ACTION]).set(l);
+      else if (settings[i][I_CURRENT] instanceof Double  d) ((UIActionSetter<Double >)settings[i][I_ACTION]).set(d);
+      else if (settings[i][I_CURRENT] instanceof String  s) ((UIActionSetter<String >)settings[i][I_ACTION]).set(s);
+    }
   }
 
   /**
    * Loads the currently saved settings file into the program.
    * <p>
-   * if a setting is missing wihtin the file as it is read in, the file will be deleted and replaced with the default settings
+   * if a setting is missing within the file as it is read in, the file will be deleted and replaced with the default settings
    */
+  @SuppressWarnings("unchecked")
   private void load() {
     List<String> lines = FileIO.readAllLines(fileName, false);
 
-    settings.clear();
+    if (lines.size() != settings.length) {
+      System.out.println("Error loading settings: number of settings mismatch ["+lines.size()+" != "+settings.length+"]");
+      resetToDefault();
+      saveChanges();
+      return;
+    }
 
-    for (int i = 0; i < lines.size(); i++) {
+    for (int i = 0; i < settings.length; i++) {
       String[] entry = lines.get(i).split(" ", 2);
 
-      if (!entry[0].equals(defaults[i*2])) {
+      if (!entry[0].equals(settings[i][I_NAME])) {
+        System.out.println("Error loading settings: incorrect setting found ["+entry[0]+". But expected "+settings[i][I_NAME]+"]");
         resetToDefault();
+        saveChanges();
         return;
       }
 
-      if (entry[0].equals("fullScreen")) Core.WINDOW.setFullscreen(entry[1].equals("true"));//Don't like this very much. Change it at some point
+      settings[i][I_CURRENT] = 
+      settings[i][I_DEFAULT] instanceof Boolean ? Boolean.parseBoolean(entry[1]) :
+      settings[i][I_DEFAULT] instanceof Integer ? Integer.parseInt    (entry[1]) :
+      settings[i][I_DEFAULT] instanceof Double  ? Double .parseDouble (entry[1]) :
+      entry[1];
 
-      settings.put(entry[0], entry[1]);
-      // System.out.println(entry[0] + ", " + entry[1]);
+      settings[i][I_SAVED] = settings[i][I_CURRENT];
+      
+      if      (settings[i][I_CURRENT] instanceof Boolean b) ((UIActionSetter<Boolean>)settings[i][I_ACTION]).set(b);
+      else if (settings[i][I_CURRENT] instanceof Integer l) ((UIActionSetter<Integer>)settings[i][I_ACTION]).set(l);
+      else if (settings[i][I_CURRENT] instanceof Double  d) ((UIActionSetter<Double >)settings[i][I_ACTION]).set(d);
+      else if (settings[i][I_CURRENT] instanceof String  s) ((UIActionSetter<String >)settings[i][I_ACTION]).set(s);
     }
-    changed = false;
   }
 
   /**
@@ -191,8 +271,8 @@ public class Settings {
    */
   public String toString() {
     String res = "";
-    for (SortedMap.Entry<String, String> e : settings.entrySet()) {
-      res += e.getKey() + " " + e.getValue() + "\n";
+    for (int i = 0; i < settings.length; i++) {
+      res += settings[i][I_NAME] + " " + settings[i][I_SAVED] + "\n";
     }
     return res;
   }

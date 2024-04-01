@@ -9,10 +9,15 @@ import mki.math.vector.Vector2;
 */
 public abstract class Collider {
   protected static final double OFFSET = 0.000001;
+
+  public static final int FLAG_EMPTY           = 0b000;
+  public static final int FLAG_COLLIDE_UNITS   = 0b001;
+  public static final int FLAG_TRIGGER_VOL     = 0b010;
+  public static final int FLAG_COLLIDE_BULLETS = 0b100;
   
-  protected boolean shootable;
-  protected boolean solid;
-  protected boolean trigger;
+  public static final int FLAG_SOLID  = FLAG_COLLIDE_UNITS | FLAG_COLLIDE_BULLETS;
+  
+  protected int collisionFlag;
   protected Vector2 offset; // centre relative to parent
   protected RigidBody parent;
   
@@ -20,13 +25,11 @@ public abstract class Collider {
   
   public static class Round extends Collider {
     private double radius;
-    public Round(Vector2 offset, double radius, boolean solid, RigidBody parent) {
+    public Round(Vector2 offset, double radius, int collisionFlag, RigidBody parent) {
       this.offset = offset;
       this.closest = offset;
       this.radius = radius;
-      this.shootable = solid;
-      this.solid = solid;
-      this.trigger = !solid;
+      this.collisionFlag = collisionFlag;
       this.parent = parent;
     }
     
@@ -35,28 +38,29 @@ public abstract class Collider {
     public void setRadius(double radius) {this.radius = radius;}
     
     public Vector2 collide(Collider o) {
-      if (o != this) {
-        Vector2 opos = o.getPos();
-        Vector2 tpos = getPos();
-        if (o instanceof Square) {
-          Square other = (Square) o;
-          Vector2 rectRelocate = new Vector2(
-          MathHelp.clamp(tpos.x, opos.x-other.getWidth()/2, opos.x+other.getWidth()/2),
-          MathHelp.clamp(tpos.y, opos.y-other.getHeight()/2, opos.y+other.getHeight()/2));
-          other.setClosest(rectRelocate);
-          Vector2 test = Vector2.abs(rectRelocate.subtract(tpos));
-          
-          double radiusSquare = radius*radius;
-          if (test.magsquare() <= radiusSquare) {return test.subtract(new Vector2(Math.sqrt(radiusSquare-test.y*test.y), Math.sqrt(radiusSquare-test.x*test.x)));}
-        }
-        else {
-          Round other = (Round) o;
-          double totRadius = other.radius + this.radius;
-          Vector2 test = Vector2.abs(opos.subtract(tpos));
-          if (test.magsquare() <= totRadius*totRadius) {return test.subtract(totRadius);}
-        }
+      if (o == this) return null;
+
+      Vector2 opos = o.getPos();
+      Vector2 tpos = getPos();
+      if (o instanceof Square other) {
+        Vector2 rectRelocate = new Vector2(
+        MathHelp.clamp(tpos.x, opos.x-other.getWidth()/2, opos.x+other.getWidth()/2),
+        MathHelp.clamp(tpos.y, opos.y-other.getHeight()/2, opos.y+other.getHeight()/2));
+        other.setClosest(rectRelocate);
+        Vector2 test = Vector2.abs(rectRelocate.subtract(tpos));
+        
+        double radiusSquare = radius*radius;
+        return (test.magsquare() <= radiusSquare) ? 
+          test.subtract(new Vector2(Math.sqrt(radiusSquare-test.y*test.y), Math.sqrt(radiusSquare-test.x*test.x))) :
+          null;
       }
-      return null;
+
+      Round other = (Round) o;
+      double totRadius = other.radius + this.radius;
+      Vector2 test = Vector2.abs(opos.subtract(tpos));
+      return (test.magsquare() <= totRadius*totRadius) ? 
+        test.subtract(totRadius) : 
+        null;
     }
     
     public void collide(Ray ray) {
@@ -66,8 +70,7 @@ public abstract class Collider {
     
     public double snapTo(Collider o, boolean isX) {
       Vector2 pos = getPos();
-      if (o instanceof Square) {
-        Square other = (Square) o;
+      if (o instanceof Square other) {
         Vector2 dist = Vector2.abs(other.getPos().subtract(pos));
         if (isX) {
           if (dist.y>other.getHeight()/2) {
@@ -95,14 +98,12 @@ public abstract class Collider {
   public static class Square extends Collider {
     private double width;
     private double height;
-    public Square(Vector2 offset, double width, double height, boolean solid, RigidBody parent) {
+    public Square(Vector2 offset, double width, double height, int collisionFlag, RigidBody parent) {
       this.offset = offset;
       this.closest = offset;
       this.width = width;
       this.height = height;
-      this.shootable = solid;
-      this.solid = solid;
-      this.trigger = !solid;
+      this.collisionFlag = collisionFlag;
       this.parent = parent;
     }
     
@@ -115,19 +116,16 @@ public abstract class Collider {
     public void setHeight(double h) {height = h;}
     
     public Vector2 collide(Collider o) {
-      if (o != this) {
-        Vector2 opos = o.getPos();
-        Vector2 tpos = getPos();
-        if (o instanceof Square) {
-          Square other = (Square) o;
-          Vector2 test = new Vector2(Math.abs(opos.x-tpos.x)-(other.getWidth()+this.width)/2, Math.abs(opos.y-tpos.y)-(other.getHeight()+this.height)/2);
-          if (test.x<=0&&test.y<=0) {return test;}
-        }
-        else {
-          return o.collide(this);
-        }
+      if (o == this) return null;
+
+      Vector2 opos = o.getPos();
+      Vector2 tpos = getPos();
+      if (o instanceof Square other) {
+        Vector2 test = new Vector2(Math.abs(opos.x-tpos.x)-(other.getWidth()+this.width)/2, Math.abs(opos.y-tpos.y)-(other.getHeight()+this.height)/2);
+        return (test.x<=0&&test.y<=0) ? test : null;
       }
-      return null;
+
+      return o.collide(this);
     }
     
     public void collide(Ray ray) {
@@ -143,53 +141,68 @@ public abstract class Collider {
     }
     
     public double snapTo(Collider o, boolean isX) {
-      if (o instanceof Square) {
-        Square other = (Square) o;
+      if (o instanceof Square other) {
         return isX ? (this.width+other.getWidth())/2+OFFSET : (this.height+other.getHeight())/2+OFFSET;
       }
-      else {
-        return 0; //Undefined
-      }
+
+      return 0; //Undefined
     }
   }
   
   public boolean isShootable() {
-    return solid ? shootable : solid;
+    return (collisionFlag & FLAG_COLLIDE_BULLETS) != 0;
   }
   
   public boolean isSolid() {
-    return solid;
+    return (collisionFlag & FLAG_COLLIDE_UNITS) != 0;
   }
   
   public boolean isTrigger() {
-    return trigger;
+    return (collisionFlag & FLAG_TRIGGER_VOL) != 0;
   }
   
-  public void setShootable(boolean shoot) {
-    shootable = shoot;
+  public void makeBulletInteractable() {
+    this.collisionFlag |= FLAG_COLLIDE_BULLETS;
+  }
+
+  public void removeBulletInteractability() {
+    this.collisionFlag &= ~FLAG_COLLIDE_BULLETS;
+  }
+
+  public void makeUnitInteractable() {
+    this.collisionFlag |= FLAG_COLLIDE_UNITS;
+  }
+
+  public void removeUnitInteractability() {
+    this.collisionFlag &= ~FLAG_COLLIDE_UNITS;
+  }
+
+  public void makeTriggerVolume() {
+    this.collisionFlag |= FLAG_TRIGGER_VOL;
+  }
+
+  public void removeTriggerVolume() {
+    this.collisionFlag &= ~FLAG_TRIGGER_VOL;
   }
   
   public void setSolid() {
-    solid = trigger ? false:true;
+    this.collisionFlag |= FLAG_SOLID;
   }
   
-  public void setVoid() {
-    solid = false;
+  public void setUnsolid() {
+    this.collisionFlag &= ~FLAG_SOLID;
   }
   
-  public void toggle() {
-    solid = trigger ? false:!solid;
-  }
-  
-  public void setTrigger(boolean trig) {
-    trigger = trig;
+  public void toggleSolidness() {
+    if (isSolid()) setUnsolid();
+    else setSolid();
   }
   
   public RigidBody getParent() {return parent;}
   
   public Vector2 getClosest() {return closest;}
   
-  public Vector2 getPos() {return parent.getPos().add(offset);}
+  public Vector2 getPos() {return parent.getPosition().add(offset);}
   
   public Vector2 getOff() {return offset;}
   
@@ -206,6 +219,11 @@ public abstract class Collider {
   public abstract double snapTo(Collider other, boolean isX);
   
   public abstract void collide(Ray ray);
+
+  @Override
+  public String toString() {
+    return getClass().getSimpleName() + (isTrigger() ? " Volume" : " Collider");
+  }
 }
 
 /**

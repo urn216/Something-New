@@ -5,7 +5,7 @@ import mki.math.vector.Vector3;
 import code.core.Core;
 import code.world.Collider;
 import code.world.RigidBody;
-
+import code.world.Tile;
 import code.world.fixed.WorldObject;
 import code.world.scene.Scene;
 
@@ -43,7 +43,7 @@ public class ItemUnit extends Unit {
     updated = true;
     List<Collider> colliders = new ArrayList<Collider>();
     for (WorldObject o : objs) {
-      colliders.addAll(o.getColls());
+      colliders.addAll(o.getColliders());
     }
     move(colliders);
   }
@@ -57,24 +57,24 @@ public class ItemUnit extends Unit {
   }
 
   private void stepX(List<Collider> colliders) {
-    renderedBody.setPosition(renderedBody.getPosition().add(v.x, 0, 0));
+    renderedBody.setPosition(renderedBody.getPosition().add(v.x*Tile.UNIT_SCALE_DOWN, 0, 0));
     Collider collided = collision(colliders, true);
     if (collided != null) {
       Vector3 position = renderedBody.getPosition();
-      renderedBody.setPosition(new Vector3(collided.getPos().x-collider.snapTo(collided, true)*Math.signum(v.x), position.y, position.z));
+      renderedBody.setPosition(new Vector3((collided.getPos().x-collider.snapTo(collided, true)*Math.signum(v.x))*Tile.UNIT_SCALE_DOWN, position.y, position.z));
       v = v.scale(-0.7, 1);
-      direction = v.unitize();
+      setMovementDirection(v);
     }
   }
 
   private void stepY(List<Collider> colliders) {
-    renderedBody.setPosition(renderedBody.getPosition().add(0, 0, v.y));
+    renderedBody.setPosition(renderedBody.getPosition().add(0, 0, -v.y*Tile.UNIT_SCALE_DOWN));
     Collider collided = collision(colliders, false);
     if (collided != null) {
       Vector3 position = renderedBody.getPosition();
-      renderedBody.setPosition(new Vector3(position.x, position.y, collided.getPos().y-collider.snapTo(collided, false)*Math.signum(v.y)));
+      renderedBody.setPosition(new Vector3(position.x, position.y, -(collided.getPos().y-collider.snapTo(collided, false)*Math.signum(v.y))*Tile.UNIT_SCALE_DOWN));
       v = v.scale(1, -0.7);
-      direction = v.unitize();
+      setMovementDirection(v);
     }
   }
 

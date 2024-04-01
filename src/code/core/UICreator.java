@@ -1,7 +1,7 @@
 package code.core;
 
 import mki.math.vector.Vector2;
-
+import mki.rendering.Constants;
 import mki.ui.elements.*;
 import mki.ui.components.*;
 import mki.ui.components.interactables.*;
@@ -72,19 +72,19 @@ public class UICreator {
     UIElement optvid = leftMenu(
       new Vector2(0.45, 0.28), 
       0.1, 
-      new UIToggle("Fullscreen", Core.WINDOW::isFullScreen, (b) -> {Core.GLOBAL_SETTINGS.setBoolSetting("fullScreen", b); Core.WINDOW.setFullscreen(b);}),
-      new UIButton("Test2", null),
-      new UIButton("Test3", null),
+      new UIToggle("Fullscreen",  Core.WINDOW::isFullScreen,              (b) -> Core.GLOBAL_SETTINGS.setBoolSetting("v_fullScreen"   , b)),
+      new UIToggle("3D Mode"   ,         Core::isRender3D,                (b) -> Core.GLOBAL_SETTINGS.setBoolSetting("v_3Drendering"  , b)),
+      new UIToggle("Fancy 3D"  ,    Constants::usesDynamicRasterLighting, (b) -> Core.GLOBAL_SETTINGS.setBoolSetting("v_fancylighting", b)),
       new UIButton("Test4", null)
     );
 
     UIElement optaud = leftMenu(
       new Vector2(0.45, 0.28), 
       0.1, 
-      new UISlider.Integer("Master: %.0f"  , () -> Core.GLOBAL_SETTINGS.getIntSetting("soundMaster"), (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("soundMaster", v), 0, 100),
-      new UISlider.Integer("Sound FX: %.0f", () -> Core.GLOBAL_SETTINGS.getIntSetting("soundFX")    , (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("soundFX"    , v), 0, 100),
-      new UISlider.Integer("Music: %.0f"   , () -> Core.GLOBAL_SETTINGS.getIntSetting("soundMusic") , (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("soundMusic" , v), 0, 100),
-      new UIToggle        ("Subtitles"     , () -> Core.GLOBAL_SETTINGS.getBoolSetting("subtitles") , (v) -> Core.GLOBAL_SETTINGS.setBoolSetting("subtitles"  , v))
+      new UISlider.Integer("Master: %.0f"  , () -> Core.GLOBAL_SETTINGS.getIntSetting ("s_master"   ), (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("s_master"   , v), 0, 100),
+      new UISlider.Integer("Sound FX: %.0f", () -> Core.GLOBAL_SETTINGS.getIntSetting ("s_FX"       ), (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("s_FX"       , v), 0, 100),
+      new UISlider.Integer("Music: %.0f"   , () -> Core.GLOBAL_SETTINGS.getIntSetting ("s_music"    ), (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("s_music"    , v), 0, 100),
+      new UIToggle        ("Subtitles"     , () -> Core.GLOBAL_SETTINGS.getBoolSetting("s_subtitles"), (v) -> Core.GLOBAL_SETTINGS.setBoolSetting("s_subtitles", v)        )
     );
 
     mainMenu.addState(UIState.DEFAULT , title   );
@@ -173,19 +173,19 @@ public class UICreator {
     UIElement optvid = centreMenu(
       new Vector2(0.5, 0.5), 
       0.1, 
-      new UIButton("Test1", null),
-      new UIButton("Test2", null),
-      new UIButton("Test3", null),
-      new UIButton("Back" , UIController::back)
+      new UIToggle("Fullscreen",  Core.WINDOW::isFullScreen,              (b) -> Core.GLOBAL_SETTINGS.setBoolSetting("v_fullScreen"   , b)),
+      new UIToggle("3D Mode"   ,         Core::isRender3D,                (b) -> Core.GLOBAL_SETTINGS.setBoolSetting("v_3Drendering"  , b)),
+      new UIToggle("Fancy 3D"  ,    Constants::usesDynamicRasterLighting, (b) -> Core.GLOBAL_SETTINGS.setBoolSetting("v_fancylighting", b)),
+      new UIButton("Back"      , UIController::back)
     );
 
     UIElement optaud = centreMenu(
       new Vector2(0.5, 0.5), 
       0.1, 
-      new UISlider.Integer("Master: %.0f"  , () -> Core.GLOBAL_SETTINGS.getIntSetting("soundMaster"), (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("soundMaster", v), 0, 100),
-      new UISlider.Integer("Sound FX: %.0f", () -> Core.GLOBAL_SETTINGS.getIntSetting("soundFX")    , (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("soundFX"    , v), 0, 100),
-      new UISlider.Integer("Music: %.0f"   , () -> Core.GLOBAL_SETTINGS.getIntSetting("soundMusic") , (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("soundMusic" , v), 0, 100),
-      new UIToggle        ("Subtitles"     , () -> Core.GLOBAL_SETTINGS.getBoolSetting("subtitles") , (v) -> Core.GLOBAL_SETTINGS.setBoolSetting("subtitles"  , v)        ),
+      new UISlider.Integer("Master: %.0f"  , () -> Core.GLOBAL_SETTINGS.getIntSetting ("s_master"   ), (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("s_master"   , v), 0, 100),
+      new UISlider.Integer("Sound FX: %.0f", () -> Core.GLOBAL_SETTINGS.getIntSetting ("s_FX"       ), (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("s_FX"       , v), 0, 100),
+      new UISlider.Integer("Music: %.0f"   , () -> Core.GLOBAL_SETTINGS.getIntSetting ("s_music"    ), (v) -> Core.GLOBAL_SETTINGS.setIntSetting ("s_music"    , v), 0, 100),
+      new UIToggle        ("Subtitles"     , () -> Core.GLOBAL_SETTINGS.getBoolSetting("s_subtitles"), (v) -> Core.GLOBAL_SETTINGS.setBoolSetting("s_subtitles", v)        ),
       new UIButton        ("Back"          , UIController::back)
     );
 

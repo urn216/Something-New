@@ -13,16 +13,18 @@ import code.world.scene.Scene;
 * @version (a version number or a date)
 */
 public interface RigidBody {
-  public Vector2 getPos();
+  public Vector2 getPosition();
 
-  public Vector2 getVel();
+  public Vector2 getVelocity();
 
-  public List<Collider> getColls();
+  public List<Collider> getColliders();
 
   public Scene getScene();
 
-  public void setPos(Vector2 pos);
+  public void setPosition(Vector2 pos);
 
   public void takeDamage(double damage);
+
+  public mki.world.RigidBody getRenderedBody();
 
 }

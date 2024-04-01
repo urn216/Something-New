@@ -1,5 +1,6 @@
 package code.world.unit;
 
+import mki.math.MathHelp;
 import mki.math.vector.Vector2;
 import mki.math.vector.Vector3;
 import mki.math.vector.Vector3I;
@@ -7,6 +8,7 @@ import mki.world.Material;
 import mki.world.object.primitive.Cube;
 import code.world.Collider;
 import code.world.RigidBody;
+import code.world.Tile;
 import code.world.fixed.WorldObject;
 import code.world.fixed.dividers.Door;
 import code.world.inv.Item;
@@ -34,7 +36,9 @@ public abstract class Unit implements RigidBody {
 
   protected final List<WorldObject> triggering = new ArrayList<>();
 
-  protected Vector2 direction;
+  protected Vector2 movementDirection;
+  protected Vector2 lookDirection;
+  
   protected Vector2 v;
   protected Vector2 a;
   protected Vector2 addAcc = new Vector2();
@@ -51,31 +55,30 @@ public abstract class Unit implements RigidBody {
   protected int hurtFrames;
 
   public Unit(Scene scene, int radius, 
-              Vector2 position, Vector2 direction, 
+              Vector2 position, Vector2 lookDirection, 
               double walkF, double vMax, double m, double hitPoints, float elasticity) {
-    this(scene, radius, position, direction, new Vector2(), new Vector2(), walkF, vMax, m, hitPoints, elasticity);
+    this(scene, radius, position, lookDirection, new Vector2(), new Vector2(), walkF, vMax, m, hitPoints, elasticity);
   }
 
   public Unit(Scene scene, int radius, Color colour,
-              Vector2 position, Vector2 direction, 
+              Vector2 position, Vector2 lookDirection, 
               double walkF, double vMax, double m, double hitPoints, float elasticity) {
-    this(scene, radius, colour, position, direction, new Vector2(), new Vector2(), walkF, vMax, m, hitPoints, elasticity);
+    this(scene, radius, colour, position, lookDirection, new Vector2(), new Vector2(), walkF, vMax, m, hitPoints, elasticity);
   }
 
   public Unit(Scene scene, int radius,
-              Vector2 position, Vector2 direction, Vector2 v, Vector2 a, 
+              Vector2 position, Vector2 lookDirection, Vector2 v, Vector2 a, 
               double walkF, double vMax, double m, double hitPoints, float elasticity) {
-    this(scene, radius, Color.white, position, direction, v, a, walkF, vMax, m, hitPoints, elasticity);
+    this(scene, radius, Color.white, position, lookDirection, v, a, walkF, vMax, m, hitPoints, elasticity);
   }
 
   public Unit(Scene scene, int radius, Color colour,
-              Vector2 position, Vector2 direction, Vector2 v, Vector2 a, 
+              Vector2 position, Vector2 lookDirection, Vector2 v, Vector2 a, 
               double walkF, double vMax, double m, double hitPoints, float elasticity) {
     this.scene = scene;
-    this.collider = new Collider.Round(new Vector2(), radius, true, this);
+    this.collider = new Collider.Round(new Vector2(), radius, Collider.FLAG_SOLID, this);
     this.colour = colour;
-    this.renderedBody = new Cube(new Vector3(position.x, 0.5, position.y), 1, new Material(new Vector3I(colour.getRed(), colour.getGreen(), colour.getBlue()), 0f, new Vector3()));
-    this.direction = direction;
+    this.movementDirection = new Vector2();
     this.v = v;
     this.a = a;
     this.walkF = walkF;
@@ -83,21 +86,41 @@ public abstract class Unit implements RigidBody {
     this.m = m;
     this.hitPoints = hitPoints;
     this.elasticity = elasticity;
+    
+    this.renderedBody = new Cube(
+      new Vector3(position.x*Tile.UNIT_SCALE_DOWN, radius*Tile.UNIT_SCALE_DOWN, -position.y*Tile.UNIT_SCALE_DOWN), 
+      radius*2*Tile.UNIT_SCALE_DOWN, 
+      new Material(new Vector3I(colour.getRed(), colour.getGreen(), colour.getBlue()), 0f, new Vector3())
+    );
+
+    this.lookDirection = new Vector2(MathHelp.clamp(lookDirection.x, -90, 90), (lookDirection.y+360)%360);
   }
 
-  public Vector2 getPos() {return new Vector2(renderedBody.getPosition().x, renderedBody.getPosition().z);}
+  public Vector2 getPosition() {
+    return new Vector2(renderedBody.getPosition().x*Tile.UNIT_SCALE_UP, -renderedBody.getPosition().z*Tile.UNIT_SCALE_UP);
+  }
 
-  public Vector2 getDir() {return direction;}
+  public Vector2 getMovementDirection() {
+    return movementDirection;
+  }
 
-  public Vector2 getVel() {return v;}
+  public Vector2 getLookDirection() {
+    return lookDirection;
+  }
 
-  public Scene getScene() {return scene;}
+  public Vector2 getVelocity() {
+    return v;
+  }
+
+  public Scene getScene() {
+    return scene;
+  }
 
   public double getHitPoints() {
     return hitPoints;
   }
 
-  public List<Collider> getColls() {
+  public List<Collider> getColliders() {
     return List.of(collider);
   }
 
@@ -105,21 +128,49 @@ public abstract class Unit implements RigidBody {
     return renderedBody;
   }
 
-  public void setPos(Vector2 position) {renderedBody.setPosition(new Vector3(position.x, 0.5, position.y));}
+  public void offsetPosition(Vector2 position) {
+    offsetPosition(position.x, position.y);
+  }
 
-  public void setDir(Vector2 dir) {direction = dir;}
+  public void offsetPosition(double x, double y) {
+    renderedBody.offsetPosition(new Vector3(x*Tile.UNIT_SCALE_DOWN, 0, -y*Tile.UNIT_SCALE_DOWN));
+  }
 
-  public void setVel(Vector2 vel) {v = vel;}
+  public void setPosition(Vector2 position) {
+    setPosition(position.x, position.y);
+  }
 
-  public void setHeld(Item i) {held = i;}
+  public void setPosition(double x, double y) {
+    renderedBody.setPosition(new Vector3(
+      x                   *Tile.UNIT_SCALE_DOWN, 
+      collider.getRadius()*Tile.UNIT_SCALE_DOWN, 
+     -y                   *Tile.UNIT_SCALE_DOWN
+    ));
+  }
+
+  public void setMovementDirection(Vector2 direction) {
+    this.movementDirection = direction.unitize();
+    this.renderedBody.setYaw(Math.atan2(this.movementDirection.x, -this.movementDirection.y)*180/Math.PI); //leg/body rotation?
+  }
+
+  public void setLookDirection(double pitch, double yaw) {
+    this.lookDirection = new Vector2(MathHelp.clamp(pitch, -90, 90), (yaw+360)%360);
+    //head rotation
+  }
+
+  public void setVelocity(Vector2 vel) {v = vel;}
+
+  public void setHeldItem(Item i) {held = i;}
 
   public void takeDamage(double damage) {
     hitPoints -= damage;
     hurtFrames = 2;
+    renderedBody.setRoll(4);
     if (hitPoints <= 0) {
       hitPoints = 0;
-      collider.setVoid();
+      collider.setUnsolid();
       alive = false;
+      renderedBody.offsetPosition(new Vector3(0, -0.75, 0));
     }
   }
 
@@ -131,9 +182,10 @@ public abstract class Unit implements RigidBody {
     }
     updated = true;
     hurtFrames--;
+    if (hurtFrames == 0) renderedBody.setRoll(0);
     List<Collider> colliders = new ArrayList<Collider>();
     for (RigidBody rb : rbs) {
-      colliders.addAll(rb.getColls());
+      colliders.addAll(rb.getColliders());
     }
     move(colliders);
     trigger(objs);
@@ -144,8 +196,7 @@ public abstract class Unit implements RigidBody {
   }
 
   public void step(List<Collider> colliders) {
-    direction = direction.unitize();
-    Vector2 inputAcc = direction.scale(walkF/m);
+    Vector2 inputAcc = movementDirection.scale(walkF/m);
     Vector2 slowAcc = v.scale(walkF/(vMax*m)).add(v.scale(m/1000));
     a = inputAcc.subtract(slowAcc).add(addAcc);
     v = v.add(a);
@@ -154,7 +205,7 @@ public abstract class Unit implements RigidBody {
 
     // if non-solid
     if (!collider.isSolid()) {
-      renderedBody.setPosition(renderedBody.getPosition().add(v.x, 0, v.y));
+      offsetPosition(v);
     }
 
     // if solid
@@ -165,22 +216,20 @@ public abstract class Unit implements RigidBody {
   }
 
   private void stepX(List<Collider> colliders) {
-    renderedBody.setPosition(renderedBody.getPosition().add(v.x, 0, 0));
+    offsetPosition(v.x, 0);
     Collider collided = collision(colliders, true);
     if (collided != null) {
-      Vector3 position = renderedBody.getPosition();
-      renderedBody.setPosition(new Vector3(collided.getPos().x-collider.snapTo(collided, true)*Math.signum(v.x), position.y, position.z));
+      setPosition(collided.getPos().x-collider.snapTo(collided, true)*Math.signum(v.x), -renderedBody.getPosition().z*Tile.UNIT_SCALE_UP);
       Vector2 dir = new Vector2(collided.getClosest().subtract(collider.getPos()).unitize());
       v = v.subtract(dir.scale(dir.dot(v)*(1+elasticity)));
     }
   }
 
   private void stepY(List<Collider> colliders) {
-    renderedBody.setPosition(renderedBody.getPosition().add(0, 0, v.y));
+    offsetPosition(0, v.y);
     Collider collided = collision(colliders, false);
     if (collided != null) {
-      Vector3 position = renderedBody.getPosition();
-      renderedBody.setPosition(new Vector3(position.x, position.y, collided.getPos().y-collider.snapTo(collided, false)*Math.signum(v.y)));
+      setPosition(renderedBody.getPosition().x*Tile.UNIT_SCALE_UP, collided.getPos().y-collider.snapTo(collided, false)*Math.signum(v.y));
       Vector2 dir = new Vector2(collided.getClosest().subtract(collider.getPos()).unitize());
       v = v.subtract(dir.scale(dir.dot(v)*(1+elasticity)));
     }
@@ -214,7 +263,7 @@ public abstract class Unit implements RigidBody {
   public void trigger(List<WorldObject> objects) {
     for (WorldObject obj : objects) {
       if (obj instanceof Door) {
-        for (Collider other : obj.getColls()) {
+        for (Collider other : obj.getColliders()) {
           if (other.isTrigger() && collider.collide(other)!=null) {
             if (!triggering.contains(obj)) {
               triggering.add(obj);
@@ -231,7 +280,7 @@ public abstract class Unit implements RigidBody {
   }
 
   public String toString() {
-    return this.getClass().getSimpleName()+" "+renderedBody.getPosition().x+" "+renderedBody.getPosition().z;
+    return this.getClass().getSimpleName()+" "+renderedBody.getPosition().x*Tile.UNIT_SCALE_UP+" "+-renderedBody.getPosition().z*Tile.UNIT_SCALE_UP;
   }
 
   public void draw(Graphics2D g) {
@@ -245,8 +294,8 @@ public abstract class Unit implements RigidBody {
     g.drawLine(
       (int)(pos.x*z-conX), 
       (int)(pos.y*z-conY), 
-      (int)((pos.x+direction.x*20)*z-conX), 
-      (int)((pos.y+direction.y*20)*z-conY)
+      (int)((pos.x+movementDirection.x*20)*z-conX), 
+      (int)((pos.y+movementDirection.y*20)*z-conY)
     );
   }
 }

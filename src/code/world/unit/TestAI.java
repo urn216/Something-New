@@ -35,21 +35,22 @@ public class TestAI extends Unit {
       0                                 //elasticity
     );
 
-    held = new Gun(this, 1200, 1, 1000, 160, 30, 0.96, true);
+    held = new Gun(1200, 1, 1000, 160, 30, 0.96, true);
   }
 
   public void move(List<Collider> colliders) {
     dirChange --;
     if (dirChange <= 0) {
       dirChange = (int) (Math.random()*2*Core.TICKS_PER_SECOND);
-      direction = Vector2.fromAngle((Math.random()*2-1)*Math.PI, 1);
+      setMovementDirection(Vector2.fromAngle((Math.random()*2-1)*Math.PI, 1));
     }
 
     Unit target = scene.getPlayer();
-    Vector2 position = new Vector2(renderedBody.getPosition().x, renderedBody.getPosition().z);
-    if (direction.dot(target.getPos().subtract(position)) > 0) {
+    Vector2 position = getPosition();
+    Vector2 direction = getMovementDirection();
+    if (direction.dot(target.getPosition().subtract(position)) > 0) {
       // held.primeUse(target.getPos().add(target.getVel()));
-      held.primeUse(position.add(direction));
+      held.primeUse(this, position.add(direction));
     }
 
     step(colliders);

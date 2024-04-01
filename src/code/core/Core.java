@@ -16,6 +16,7 @@ import code.world.scene.Scene;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 
 enum State {
   MAINMENU,
@@ -59,6 +60,8 @@ public abstract class Core {
   private static int sceneTransitionCounter;
   private static final int sceneTransitionLimit = (int)TICKS_PER_SECOND;
   private static boolean sceneTransitionFirstHalf = true;
+
+  protected static boolean render3D = false;
 
   // int pauseCool = 0;
   private static int deathTime = 0;
@@ -108,6 +111,14 @@ public abstract class Core {
     return Controls.mousePos;
   }
 
+  public static final boolean isRender3D() {
+    return render3D;
+  }
+
+  public static final void setRender3D(boolean render3d) {
+    render3D = render3d;
+  }
+
   public static long currentTicks() {
     return tickCount;
   }
@@ -154,7 +165,7 @@ public abstract class Core {
   * A helper method that toggles whether or not the game is paused
   */
   public static void pause() {
-    if (state != State.PAUSE && state != State.RUN) return;
+    if (state != State.PAUSE && state != State.RUN && state != State.DEATH) return;
 
     state = UIController.getState()!=UIState.DEFAULT ? State.PAUSE : State.RUN;
   }
@@ -222,6 +233,7 @@ public abstract class Core {
         }
         break;
         case MAINMENU:
+        Controls.setMouseCaptureState(WINDOW.FRAME, false);
         if (newSaveName!=null) {
           saveName = newSaveName;
           newSaveName = null;
@@ -230,16 +242,19 @@ public abstract class Core {
         break;
 
         case RUN:
-        currentScene.update(Controls.KEY_DOWN, Controls.MOUSE_DOWN, Controls.mousePos);
+        Controls.setMouseCaptureState(WINDOW.FRAME, render3D);
+        currentScene.update(Controls.KEY_DOWN, Controls.MOUSE_DOWN, Controls.mousePos, Controls.getMouseOffSet());
         if (!currentScene.getPlayer().isAlive()) {state = State.DEATH;}
         break;
 
         case PAUSE:
+        Controls.setMouseCaptureState(WINDOW.FRAME, false);
         break;
 
         case DEATH:
+        Controls.setMouseCaptureState(WINDOW.FRAME, render3D);
         if (deathTime%2==0) {
-          currentScene.update(Controls.KEY_DOWN, Controls.MOUSE_DOWN, Controls.mousePos);
+          currentScene.update(Controls.KEY_DOWN, Controls.MOUSE_DOWN, Controls.mousePos, Controls.getMouseOffSet());
         }
         if (deathTime >= 120) {
           deathTime = 0;
@@ -250,6 +265,7 @@ public abstract class Core {
         break;
 
         case TRANSITION:
+        Controls.setMouseCaptureState(WINDOW.FRAME, false);
         Camera cam = currentScene.getCam();
         cam.follow();
         sceneTransitionCounter++;
@@ -262,6 +278,7 @@ public abstract class Core {
         if (sceneTransitionCounter >= sceneTransitionLimit) {transition();}
         break;
       }
+
       if (quit) {
         System.exit(0);
       }
@@ -289,7 +306,9 @@ public abstract class Core {
       case RUN:
       case PAUSE:
       case DEATH:
-      currentScene.draw(g);
+      if (render3D) 
+        g.drawImage(currentScene.getPlayerViewPort().getImage().getScaledInstance(Core.WINDOW.screenWidth(), -1, BufferedImage.SCALE_DEFAULT), 0, 0, null);
+      else currentScene.draw(g);
       UIController.draw(g, WINDOW.screenWidth(), WINDOW.screenHeight());
       break;
     }

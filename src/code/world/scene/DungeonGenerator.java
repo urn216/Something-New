@@ -93,7 +93,7 @@ public class DungeonGenerator implements RandomGenerator {
 
     fixedObj.add(new Light(0, 0, (rand.nextFloat() > BROKEN_LIGHT_CHANCE), result));
 
-    result.player = new Player(Tile.TILE_SIZE/2, Tile.TILE_SIZE/2, result);
+    result.player = new Player(Tile.TILE_SIZE/2, Tile.TILE_SIZE/2, 0, 0, 160, null, result);
     result.cam.setTarU(result.player);
     units.add(result.player);
 

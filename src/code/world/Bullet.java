@@ -1,6 +1,10 @@
 package code.world;
 
 import mki.math.vector.Vector2;
+import mki.math.vector.Vector3;
+import mki.math.vector.Vector3I;
+import mki.world.Material;
+import mki.world.object.primitive.Cube;
 
 import java.util.*;
 import java.awt.Graphics2D;
@@ -18,17 +22,24 @@ public class Bullet {
   private boolean alive = true;
   private boolean updated = false;
   private RigidBody parent;
+  
+  public final mki.world.RigidBody renderedBullet;
 
   /**
   * Constructor for Colliders
   */
   public Bullet(RigidBody parent, Vector2 v, int lifetime, double damage) {
     this.parent = parent;
-    this.position = parent.getPos().add(parent.getVel());
+    this.position = parent.getPosition().add(parent.getVelocity());
     this.prevPos = position;
-    this.velocity = v.add(parent.getVel());
+    this.velocity = v.add(parent.getVelocity());
     this.lifetime = lifetime;
     this.damage = damage;
+    renderedBullet = new Cube(
+      new Vector3(this.position.x*Tile.UNIT_SCALE_DOWN, parent.getRenderedBody().getPosition().y, -this.position.y*Tile.UNIT_SCALE_DOWN), 
+      Tile.UNIT_SCALE_DOWN, 
+      new Material(new Vector3I(200, 0, 0), 0f, new Vector3(4, 0, 0))
+    );
   }
 
   public Vector2 getPos() {return position;}
@@ -42,19 +53,21 @@ public class Bullet {
     Ray ray = new Ray(position, velocity);
     for (RigidBody rb : rbs) {
       if (rb==parent) {continue;}
-      for (Collider coll : rb.getColls()) {
+      for (Collider coll : rb.getColliders()) {
         if (!coll.isShootable()) {continue;}
         coll.collide(ray);
       }
     }
     if (ray.hasHit()) {
       position = ray.getHitLocation();
+      this.renderedBullet.setPosition(new Vector3(this.position.x*Tile.UNIT_SCALE_DOWN, parent.getRenderedBody().getPosition().y, -this.position.y*Tile.UNIT_SCALE_DOWN));
       ray.getHitObject().takeDamage(damage);
       alive = false;
       lifetime = 1;
     }
     else {
       position = position.add(velocity);
+      this.renderedBullet.setPosition(new Vector3(this.position.x*Tile.UNIT_SCALE_DOWN, parent.getRenderedBody().getPosition().y, -this.position.y*Tile.UNIT_SCALE_DOWN));
     }
     if (lifetime <= 0) {alive = false;}
   }

@@ -41,9 +41,9 @@ public class Light extends WorldObject {
     this.scene = scene;
     this.origin = new Vector2(x*Tile.TILE_SIZE, y*Tile.TILE_SIZE);
     // Vector2 position = origin.add(Tile.TILE_SIZE/2);
-    this.renderedBody = new Cube(new Vector3(origin.x+Tile.TILE_SIZE/2, 0.5, origin.y+Tile.TILE_SIZE/2), 1, new Material(new Vector3I(150), 0f, new Vector3(100)));
+    this.renderedBody = new Cube(new Vector3(origin.x+Tile.TILE_SIZE/2, Tile.TILE_SIZE/2-2, -origin.y-Tile.TILE_SIZE/2).scale(Tile.UNIT_SCALE_DOWN), 6*Tile.UNIT_SCALE_DOWN, new Material(new Vector3I(150), 0f, new Vector3(functioning ? 2*Tile.TILE_SIZE : 0)));
     this.width = 6;
-    colliders.add(new Collider.Round(new Vector2(), 5, false, this));
+    // colliders.add(new Collider.Round(new Vector2(), 5, Collider.FLAG_EMPTY, this));
 
     this.functioning = functioning;
   }
@@ -54,12 +54,12 @@ public class Light extends WorldObject {
     List<WorldObject> localObj = new ArrayList<WorldObject>();
     List<Ray> rays = new ArrayList<Ray>();
     double limit = RANGE*RANGE+Tile.TILE_SIZE*Tile.TILE_SIZE;
-    Vector2 position = getPos();
+    Vector2 position = getPosition();
     for (WorldObject obj : objs) {
-      if (obj.getPos().subtract(position).magsquare() < limit) {
+      if (obj.getPosition().subtract(position).magsquare() < limit) {
         localObj.add(obj);
         // obj.setColour(Color.red);
-        for (Collider collider : obj.getColls()) {
+        for (Collider collider : obj.getColliders()) {
           if (!collider.isSolid() || collider instanceof Round) continue;
           Collider.Square col = (Collider.Square) collider;
           Vector2 pos = col.getPos();
@@ -73,7 +73,7 @@ public class Light extends WorldObject {
 
     for (Ray ray : rays) {
       for (WorldObject obj : localObj) {
-        for (Collider col : obj.getColls()) {
+        for (Collider col : obj.getColliders()) {
           if (!col.isSolid()) continue;
           col.collide(ray);
         }
@@ -104,7 +104,7 @@ public class Light extends WorldObject {
     double conX = scene.getCam().conX();
     double conY = scene.getCam().conY();
     g.setColor(this.functioning ? Color.gray : Wall.WALL_COLOUR);
-    g.fill(new Ellipse2D.Double((renderedBody.getPosition().x-width/2)*z-conX, (renderedBody.getPosition().z-width/2)*z-conY, width*z, width*z));
+    g.fill(new Ellipse2D.Double((renderedBody.getPosition().x*Tile.UNIT_SCALE_UP-width/2)*z-conX, (-renderedBody.getPosition().z*Tile.UNIT_SCALE_UP-width/2)*z-conY, width*z, width*z));
     
     // g.setColor(Color.blue);
     // for (Ray r : rays) {

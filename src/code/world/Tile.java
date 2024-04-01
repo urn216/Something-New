@@ -1,7 +1,6 @@
 package code.world;
 
 import mki.math.vector.Vector2;
-
 import mki.math.MathHelp;
 // import code.world.fixed.Light;
 import code.world.fixed.WorldObject;
@@ -21,6 +20,9 @@ import java.awt.Color;
 */
 public class Tile {
   public static final int TILE_SIZE = 64;
+
+  public static final double UNIT_SCALE_UP   = TILE_SIZE/4.0;
+  public static final double UNIT_SCALE_DOWN = 1/UNIT_SCALE_UP;
 
   private Vector2 position;
   private Vector2 origin;
@@ -43,7 +45,7 @@ public class Tile {
   public Tile(double x, double y, int active) {
     origin = new Vector2(x*TILE_SIZE, y*TILE_SIZE);
     position = new Vector2(x*TILE_SIZE+TILE_SIZE/2.0, y*TILE_SIZE+TILE_SIZE/2.0);
-    this.active = active != 0 ? true: false;
+    this.active = active != 0;
   }
 
   // public boolean onScreen(Camera cam) {
@@ -77,11 +79,17 @@ public class Tile {
   //   return false;
   // }
 
-  public void activate() {active = true;}
+  public void activate() {
+    active = true; 
+  }
 
-  public void deactivate() {active = false;}
+  public void deactivate() {
+    active = false;
+  }
 
-  public void toggle() {active = !active;}
+  public void toggle() {
+    active = !active;
+  }
 
   public boolean isActive() {return active;}
 
@@ -100,7 +108,7 @@ public class Tile {
     fixedObj.clear();
     bullets.clear();
     for (Unit unit : allUnits) {
-      Vector2 unitPos = unit.getPos();
+      Vector2 unitPos = unit.getPosition();
       if (unitPos.x >= position.x-TILE_SIZE/2.0 && unitPos.x < position.x+TILE_SIZE/2.0 && unitPos.y >= position.y-TILE_SIZE/2.0 && unitPos.y < position.y+TILE_SIZE/2.0) {
         units.add(unit);
       }
@@ -154,7 +162,7 @@ public class Tile {
     for (int i = 0; i<units.size(); i++) {
       Unit unit = units.get(i);
       unit.update(nbOs, rbs);
-      Vector2 unitPos = unit.getPos().subtract(topLeft).scale(1.0/TILE_SIZE).add(1);
+      Vector2 unitPos = unit.getPosition().subtract(topLeft).scale(1.0/TILE_SIZE).add(1);
       int x = (int)MathHelp.clamp(unitPos.x, 0, 2);
       int y = (int)MathHelp.clamp(unitPos.y, 0, 2);
 

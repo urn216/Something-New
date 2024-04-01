@@ -1,7 +1,6 @@
 package code.world.inv;
 
 import mki.math.vector.Vector2;
-
 import code.world.RigidBody;
 import code.world.unit.Unit;
 
@@ -25,8 +24,8 @@ public class GunLauncher extends Gun {
   * @param acc The percent accuracy of each projectile
   * @param auto Whether or not the launcher is full auto
   */
-  public GunLauncher(RigidBody parent, Unit proj, double v, int num, int coold, double acc, boolean auto) {
-    this(parent, proj, v, num, coold, acc, auto, null);
+  public GunLauncher(Unit proj, double v, int num, int coold, double acc, boolean auto) {
+    this(proj, v, num, coold, acc, auto, null);
   }
 
   /**
@@ -43,24 +42,24 @@ public class GunLauncher extends Gun {
   * @param auto Whether or not the launcher is full auto
   * @param second The secondary fire mode for the launcher
   */
-  public GunLauncher(RigidBody parent, Unit proj, double v, int num, int coold, double acc, boolean auto, Item second) {
-    super(parent, v, num, 0, coold, 0, acc, auto, second);
+  public GunLauncher(Unit proj, double v, int num, int coold, double acc, boolean auto, Item second) {
+    super(v, num, 0, coold, 0, acc, auto, second);
 
     projectile = proj;
   }
 
   @Override
-  public void primeUse(Vector2 usePos) {
+  public void primeUse(RigidBody parent, Vector2 usePos) {
     long currentShot = System.currentTimeMillis();
     if (currentShot - lastShot < cooldown) return;
     lastShot = currentShot;
 
-    Vector2 position = parent.getPos().add(parent.getVel());
+    Vector2 position = parent.getPosition().add(parent.getVelocity());
     Vector2 bDir = new Vector2(usePos.x-position.x, usePos.y-position.y).unitize();
     for (int i = 0; i < projCount; i++) {
       Vector2 bRan = Vector2.fromAngle(Math.atan2(bDir.y, bDir.x)+(Math.random()*2-1)*Math.PI*accuracy, Math.random()*(projVelocity/10)+projVelocity-(projVelocity/20));
       Unit b = projectile.summon(position.x, position.y, parent.getScene());
-      b.setVel(bRan.add(parent.getVel()));
+      b.setVelocity(bRan.add(parent.getVelocity()));
       parent.getScene().addUnit(b);
     }
   }
