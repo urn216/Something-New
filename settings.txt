@@ -1,7 +1,0 @@
-s_master 100
-s_FX 0
-s_music 100
-s_subtitles false
-v_fullScreen true
-v_3Drendering true
-v_fancylighting true
