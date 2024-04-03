@@ -1,12 +1,11 @@
 package code.world.unit;
 
 import mki.math.vector.Vector2;
-import mki.math.vector.Vector3;
 import code.core.Core;
 import code.world.Collider;
 import code.world.RigidBody;
-import code.world.Tile;
 import code.world.fixed.WorldObject;
+import code.world.inv.Item;
 import code.world.scene.Scene;
 
 import java.util.*;
@@ -22,61 +21,41 @@ import java.util.*;
 */
 public class ItemUnit extends Unit {
 
-  public ItemUnit(double X, double Y, Scene scene) {
+  public ItemUnit(Scene scene, Item item, Vector2 position, Vector2 velocity) {
     super(
       scene,                            //scene
-      4,                                //size
-      new Vector2(X, Y),                //pos
+      3,                                //size
+      position,                         //pos
+      velocity,
       new Vector2(),                    //dir
       0,                                //walk-force
       240/Core.TICKS_PER_SECOND,        //max-velocity
       40,                               //mass
       1,                                //hitpoints
-      0                                 //elasticity
+      0.7f                              //elasticity
     );
+
+    this.collider.setToTriggerVolume(null, null);
+    this.held = item;
   }
 
-  public void update(List<WorldObject> objs, List<RigidBody> rbs) {
-    if (updated || !alive) {
-      return;
-    }
-    updated = true;
-    List<Collider> colliders = new ArrayList<Collider>();
-    for (WorldObject o : objs) {
-      colliders.addAll(o.getColliders());
-    }
-    move(colliders);
-  }
-
+  @Override
   public void step(List<Collider> colliders) {
-    Vector2 slowAcc = v.scale(m/1000);
-    v = v.subtract(slowAcc);
+    Vector2 slowAcc = velocity.scale(m/500);
+    velocity = velocity.subtract(slowAcc);
+
+    colliders = colliders.stream().filter((c) -> (c.getParent() instanceof WorldObject)).toList();
 
     stepX(colliders);
     stepY(colliders);
   }
 
-  private void stepX(List<Collider> colliders) {
-    renderedBody.setPosition(renderedBody.getPosition().add(v.x*Tile.UNIT_SCALE_DOWN, 0, 0));
-    Collider collided = collision(colliders, true);
-    if (collided != null) {
-      Vector3 position = renderedBody.getPosition();
-      renderedBody.setPosition(new Vector3((collided.getPos().x-collider.snapTo(collided, true)*Math.signum(v.x))*Tile.UNIT_SCALE_DOWN, position.y, position.z));
-      v = v.scale(-0.7, 1);
-      setMovementDirection(v);
-    }
-  }
+  @Override
+  public void trigger(List<RigidBody> bodies) {}
 
-  private void stepY(List<Collider> colliders) {
-    renderedBody.setPosition(renderedBody.getPosition().add(0, 0, -v.y*Tile.UNIT_SCALE_DOWN));
-    Collider collided = collision(colliders, false);
-    if (collided != null) {
-      Vector3 position = renderedBody.getPosition();
-      renderedBody.setPosition(new Vector3(position.x, position.y, -(collided.getPos().y-collider.snapTo(collided, false)*Math.signum(v.y))*Tile.UNIT_SCALE_DOWN));
-      v = v.scale(1, -0.7);
-      setMovementDirection(v);
-    }
+  @Override
+  public void use(Unit user) {
+    scene.removeUnit(this);
+    user.takeItem(held);
   }
-
-  public Unit summon(double x, double y, Scene s) {return new ItemUnit(x, y, s);}
 }

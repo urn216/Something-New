@@ -9,8 +9,6 @@ import mki.world.object.primitive.Cube;
 import code.world.Collider;
 import code.world.RigidBody;
 import code.world.Tile;
-import code.world.fixed.WorldObject;
-import code.world.fixed.dividers.Door;
 import code.world.inv.Item;
 import code.world.scene.Scene;
 
@@ -34,13 +32,13 @@ public abstract class Unit implements RigidBody {
 
   protected boolean alive = true;
 
-  protected final List<WorldObject> triggering = new ArrayList<>();
+  protected final List<RigidBody> triggering = new ArrayList<>();
 
   protected Vector2 movementDirection;
   protected Vector2 lookDirection;
   
-  protected Vector2 v;
-  protected Vector2 a;
+  protected Vector2 velocity;
+  protected Vector2 acceleration;
   protected Vector2 addAcc = new Vector2();
   protected Collider.Round collider;
   protected boolean updated = false;
@@ -54,33 +52,21 @@ public abstract class Unit implements RigidBody {
   protected double hitPoints;
   protected int hurtFrames;
 
-  public Unit(Scene scene, int radius, 
-              Vector2 position, Vector2 lookDirection, 
-              double walkF, double vMax, double m, double hitPoints, float elasticity) {
-    this(scene, radius, position, lookDirection, new Vector2(), new Vector2(), walkF, vMax, m, hitPoints, elasticity);
-  }
-
-  public Unit(Scene scene, int radius, Color colour,
-              Vector2 position, Vector2 lookDirection, 
-              double walkF, double vMax, double m, double hitPoints, float elasticity) {
-    this(scene, radius, colour, position, lookDirection, new Vector2(), new Vector2(), walkF, vMax, m, hitPoints, elasticity);
-  }
-
   public Unit(Scene scene, int radius,
-              Vector2 position, Vector2 lookDirection, Vector2 v, Vector2 a, 
+              Vector2 position, Vector2 velocity, Vector2 lookDirection, 
               double walkF, double vMax, double m, double hitPoints, float elasticity) {
-    this(scene, radius, Color.white, position, lookDirection, v, a, walkF, vMax, m, hitPoints, elasticity);
+    this(scene, radius, Color.white, position, velocity, lookDirection, walkF, vMax, m, hitPoints, elasticity);
   }
 
   public Unit(Scene scene, int radius, Color colour,
-              Vector2 position, Vector2 lookDirection, Vector2 v, Vector2 a, 
+              Vector2 position, Vector2 velocity, Vector2 lookDirection, 
               double walkF, double vMax, double m, double hitPoints, float elasticity) {
     this.scene = scene;
-    this.collider = new Collider.Round(new Vector2(), radius, Collider.FLAG_SOLID, this);
+    this.collider = new Collider.Round(this, new Vector2(), radius, Collider.FLAG_SOLID);
     this.colour = colour;
     this.movementDirection = new Vector2();
-    this.v = v;
-    this.a = a;
+    this.velocity = velocity;
+    this.acceleration = new Vector2();
     this.walkF = walkF;
     this.vMax = vMax;
     this.m = m;
@@ -109,7 +95,7 @@ public abstract class Unit implements RigidBody {
   }
 
   public Vector2 getVelocity() {
-    return v;
+    return velocity;
   }
 
   public Scene getScene() {
@@ -158,9 +144,20 @@ public abstract class Unit implements RigidBody {
     //head rotation
   }
 
-  public void setVelocity(Vector2 vel) {v = vel;}
+  public void setVelocity(Vector2 vel) {velocity = vel;}
 
   public void setHeldItem(Item i) {held = i;}
+
+  public void dropHeldItem() {
+    if (held == null) return;
+    scene.addUnit(new ItemUnit(scene, held, getPosition(), this.velocity.add((Math.random()-0.5)*vMax/2, (Math.random()-0.5)*vMax/2)));
+    held = null;
+  }
+
+  public void takeItem(Item item) {
+    dropHeldItem();
+    held = item;
+  }
 
   public void takeDamage(double damage) {
     hitPoints -= damage;
@@ -168,15 +165,19 @@ public abstract class Unit implements RigidBody {
     renderedBody.setRoll(4);
     if (hitPoints <= 0) {
       hitPoints = 0;
-      collider.setUnsolid();
+      collider.removeSolidity();
       alive = false;
+      dropHeldItem();
       renderedBody.offsetPosition(new Vector3(0, -0.75, 0));
     }
   }
 
   public boolean isAlive() {return alive;}
 
-  public void update(List<WorldObject> objs, List<RigidBody> rbs) {
+  @Override
+  public void use(Unit user) {}
+
+  public void update(List<RigidBody> rbs) {
     if (updated || !alive) {
       return;
     }
@@ -188,7 +189,7 @@ public abstract class Unit implements RigidBody {
       colliders.addAll(rb.getColliders());
     }
     move(colliders);
-    trigger(objs);
+    trigger(rbs);
   }
 
   public void move(List<Collider> colliders) {
@@ -197,15 +198,15 @@ public abstract class Unit implements RigidBody {
 
   public void step(List<Collider> colliders) {
     Vector2 inputAcc = movementDirection.scale(walkF/m);
-    Vector2 slowAcc = v.scale(walkF/(vMax*m)).add(v.scale(m/1000));
-    a = inputAcc.subtract(slowAcc).add(addAcc);
-    v = v.add(a);
+    Vector2 slowAcc = velocity.scale(walkF/(vMax*m)).add(velocity.scale(m/1000));
+    acceleration = inputAcc.subtract(slowAcc).add(addAcc);
+    velocity = velocity.add(acceleration);
 
     addAcc = new Vector2();
 
     // if non-solid
     if (!collider.isSolid()) {
-      offsetPosition(v);
+      offsetPosition(velocity);
     }
 
     // if solid
@@ -215,29 +216,24 @@ public abstract class Unit implements RigidBody {
     }
   }
 
-  private void stepX(List<Collider> colliders) {
-    offsetPosition(v.x, 0);
+  protected void stepX(List<Collider> colliders) {
+    offsetPosition(velocity.x, 0);
     Collider collided = collision(colliders, true);
     if (collided != null) {
-      setPosition(collided.getPos().x-collider.snapTo(collided, true)*Math.signum(v.x), -renderedBody.getPosition().z*Tile.UNIT_SCALE_UP);
+      setPosition(collided.getPos().x-collider.snapTo(collided, true)*Math.signum(velocity.x), -renderedBody.getPosition().z*Tile.UNIT_SCALE_UP);
       Vector2 dir = new Vector2(collided.getClosest().subtract(collider.getPos()).unitize());
-      v = v.subtract(dir.scale(dir.dot(v)*(1+elasticity)));
+      velocity = velocity.subtract(dir.scale(dir.dot(velocity)*(1+elasticity)));
     }
   }
 
-  private void stepY(List<Collider> colliders) {
-    offsetPosition(0, v.y);
+  protected void stepY(List<Collider> colliders) {
+    offsetPosition(0, velocity.y);
     Collider collided = collision(colliders, false);
     if (collided != null) {
-      setPosition(renderedBody.getPosition().x*Tile.UNIT_SCALE_UP, collided.getPos().y-collider.snapTo(collided, false)*Math.signum(v.y));
+      setPosition(renderedBody.getPosition().x*Tile.UNIT_SCALE_UP, collided.getPos().y-collider.snapTo(collided, false)*Math.signum(velocity.y));
       Vector2 dir = new Vector2(collided.getClosest().subtract(collider.getPos()).unitize());
-      v = v.subtract(dir.scale(dir.dot(v)*(1+elasticity)));
+      velocity = velocity.subtract(dir.scale(dir.dot(velocity)*(1+elasticity)));
     }
-  }
-
-  public Unit summon(double x, double y, Scene s) {
-    System.out.println("This unit either does not exist or cannot be summoned.");
-    return null;
   }
 
   public void undone() {
@@ -260,27 +256,30 @@ public abstract class Unit implements RigidBody {
     return ans;
   }
 
-  public void trigger(List<WorldObject> objects) {
-    for (WorldObject obj : objects) {
-      if (obj instanceof Door) {
-        for (Collider other : obj.getColliders()) {
-          if (other.isTrigger() && collider.collide(other)!=null) {
-            if (!triggering.contains(obj)) {
-              triggering.add(obj);
-              obj.activate(this);
-            }
+  public void trigger(List<RigidBody> bodies) {
+    for (RigidBody obj : bodies) {
+      for (Collider other : obj.getColliders()) {
+        if (!other.isTrigger()) continue;
+
+        if (collider.collide(other)!=null) {
+          if (!triggering.contains(obj)) {
+            triggering.add(obj);
+            other.enterVolume(this);
           }
-          else if (triggering.contains(obj)) {
-            triggering.remove(obj);
-            obj.deactivate(this);
-          }
+        }
+        else if (triggering.remove(obj)) {
+          other.leaveVolume(this);
         }
       }
     }
   }
 
   public String toString() {
-    return this.getClass().getSimpleName()+" "+renderedBody.getPosition().x*Tile.UNIT_SCALE_UP+" "+-renderedBody.getPosition().z*Tile.UNIT_SCALE_UP;
+    return this.getClass().getSimpleName()+
+    " "+ renderedBody.getPosition().x*Tile.UNIT_SCALE_UP+
+    " "+-renderedBody.getPosition().z*Tile.UNIT_SCALE_UP+
+    " "+velocity.x+
+    " "+velocity.y;
   }
 
   public void draw(Graphics2D g) {

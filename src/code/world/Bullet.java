@@ -42,7 +42,7 @@ public class Bullet {
     );
   }
 
-  public Vector2 getPos() {return position;}
+  public Vector2 getPosition() {return position;}
 
   public void update(List<RigidBody> rbs) {
     if (updated) {return;}

@@ -13,6 +13,8 @@ import code.world.unit.Player;
 import code.world.unit.TestAI;
 import code.world.unit.Unit;
 
+import mki.math.vector.Vector2;
+
 import java.util.*;
 
 /**
@@ -93,7 +95,7 @@ public class DungeonGenerator implements RandomGenerator {
 
     fixedObj.add(new Light(0, 0, (rand.nextFloat() > BROKEN_LIGHT_CHANCE), result));
 
-    result.player = new Player(Tile.TILE_SIZE/2, Tile.TILE_SIZE/2, 0, 0, 160, null, result);
+    result.player = new Player(result, null, new Vector2(Tile.TILE_SIZE/2, Tile.TILE_SIZE/2), new Vector2(), 0, 0, 160);
     result.cam.setTarU(result.player);
     units.add(result.player);
 
@@ -128,7 +130,7 @@ public class DungeonGenerator implements RandomGenerator {
         int cY = y+j+WHICH_DIR[dir*2+1]*rHeight/2;
         map[cX][cY].activate();
         // chance for doors to be added
-        if (rand.nextFloat() < TEST_AI_SPAWN_CHANCE) {units.add(new TestAI((cX-width/2)*Tile.TILE_SIZE+Tile.TILE_SIZE/2, (cY-height/2)*Tile.TILE_SIZE+Tile.TILE_SIZE/2, result));}
+        if (rand.nextFloat() < TEST_AI_SPAWN_CHANCE) {units.add(new TestAI(result, null, new Vector2((cX-width/2)*Tile.TILE_SIZE+Tile.TILE_SIZE/2, (cY-height/2)*Tile.TILE_SIZE+Tile.TILE_SIZE/2), new Vector2()));}
         if (i%LIGHT_SPACING==0 && j%LIGHT_SPACING==0) {fixedObj.add(new Light(cX-width/2, cY-height/2, (rand.nextFloat() > BROKEN_LIGHT_CHANCE), result));}
         if (i == -(rWidth/2)) {if (!fixedObj.add(new Wall(cX-width/2, cY-height/2, Direction.West, result)) && connect) {fixedObj.remove(new Wall(cX-width/2, cY-height/2, Direction.West, result));}}
         if (i == rWidth/2) {if (!fixedObj.add(new Wall(cX-width/2+1, cY-height/2, Direction.West, result)) && connect) {fixedObj.remove(new Wall(cX-width/2+1, cY-height/2, Direction.West, result));}}

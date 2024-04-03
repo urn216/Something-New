@@ -4,14 +4,11 @@ import mki.math.vector.Vector2;
 import mki.rendering.renderers.Renderer;
 import mki.world.Camera3D;
 import code.core.Core;
-import code.world.Collider;
 import code.world.Tile;
-import code.world.fixed.WorldObject;
 
 import code.world.inv.*;
 import code.world.scene.Scene;
 
-import java.util.*;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
 
@@ -20,18 +17,19 @@ import java.awt.event.KeyEvent;
 */
 public class Player extends Unit {
 
-  private static final int DEFAULT_HITPOINTS = 160;
+  public static final int DEFAULT_HITPOINTS = 160;
 
   private final Camera3D viewPort;
 
   /**
   * Constructor for objects of class Player
   */
-  public Player(double X, double Y, double pitch, double yaw, double hitpoints, Item held, Scene scene) {
+  public Player(Scene scene, Item held, Vector2 position, Vector2 velocity, double pitch, double yaw, double hitpoints) {
     super(
       scene,                            //scene
       8,                                //radius
-      new Vector2(X, Y),                //pos
+      position,                         //pos
+      velocity,
       new Vector2(pitch, yaw),          //dir
       6000/Core.TICKS_PER_SECOND,       //walk-force
       240/Core.TICKS_PER_SECOND,        //max-velocity
@@ -73,19 +71,22 @@ public class Player extends Unit {
     else setMovementDirection(new Vector2(horizontalInput, verticalInput));
     
     //mouse
-    if (mouse[1]) {
-      held.primeUse(this, usePos);
-      mouse[1] = held.getAutoType();
-    }
-
-    if (mouse[3] && held.hasSecondary()) {
-      held.secondUse(this, usePos);
-      mouse[3] = held.getAutoType2();
+    if (held != null) {
+      if (mouse[1]) {
+        held.primeUse(this, usePos);
+        mouse[1] = held.getAutoType();
+      }
+  
+      if (mouse[3] && held.hasSecondary()) {
+        held.secondUse(this, usePos);
+        mouse[3] = held.getAutoType2();
+      }
     }
 
     //triggering
     if (!triggering.isEmpty() && keys[KeyEvent.VK_E]) {
-      triggering.get(triggering.size()-1).toggle(this);
+      triggering.get(triggering.size()-1).use(this);
+      triggering.remove(triggering.size()-1);
       keys[KeyEvent.VK_E] = false;
       // System.out.println("Toggling " + triggering.get(triggering.size()-1));
     }
@@ -116,36 +117,16 @@ public class Player extends Unit {
     this.viewPort.setPosition(this.renderedBody.getPosition().add(0, 8*Tile.UNIT_SCALE_DOWN, 0));
   }
 
-  public Unit summon(double x, double y, Scene s) {return new Player(x, y, 0, 0, DEFAULT_HITPOINTS, null, s);}
-
-  public void trigger(List<WorldObject> objects) {
-    for (WorldObject obj : objects) {
-      for (Collider other : obj.getColliders()) {
-        if (!other.isTrigger()) continue;
-
-        if (collider.collide(other)!=null) {
-          if (!triggering.contains(obj)) {
-            triggering.add(obj);
-            obj.doTrigger();
-            // System.out.println("  Adding " + obj + " due to " + other + ".\n    " + other.getPos() + ", " + collider.getPos());
-          }
-        }
-        else if (triggering.remove(obj)) {
-          obj.undoTrigger();
-          // System.out.println("Removing " + obj + " due to " + other + ".\n    " + other.getPos() + ", " + collider.getPos());
-        }
-      }
-    }
-  }
-
   public void drawReticle(Graphics2D g) {
-    if (alive) held.drawReticle(g, this, scene.getCursorWorldPos());
+    if (alive && held != null) held.drawReticle(g, this, scene.getCursorWorldPos());
   }
 
   public String toString() {
     return this.getClass().getSimpleName()+
     " "+ renderedBody.getPosition().x*Tile.UNIT_SCALE_UP+
     " "+-renderedBody.getPosition().z*Tile.UNIT_SCALE_UP+
+    " "+velocity.x+
+    " "+velocity.y+
     " "+lookDirection.x+
     " "+lookDirection.y+
     " "+hitPoints;

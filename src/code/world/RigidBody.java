@@ -5,6 +5,7 @@ import mki.math.vector.Vector2;
 import java.util.*;
 
 import code.world.scene.Scene;
+import code.world.unit.Unit;
 
 /**
 * Write a description of class WorldObject here.
@@ -26,5 +27,7 @@ public interface RigidBody {
   public void takeDamage(double damage);
 
   public mki.world.RigidBody getRenderedBody();
+
+  public void use(Unit user);
 
 }

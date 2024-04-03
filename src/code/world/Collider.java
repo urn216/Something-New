@@ -1,5 +1,8 @@
 package code.world;
 
+import java.util.function.Consumer;
+
+import code.world.unit.Unit;
 import mki.math.MathHelp;
 import mki.math.vector.Vector2;
 
@@ -22,15 +25,25 @@ public abstract class Collider {
   protected RigidBody parent;
   
   protected Vector2 closest;
+
+  protected Consumer<Unit> onEnterVolume;
+  protected Consumer<Unit> onLeaveVolume;
   
   public static class Round extends Collider {
     private double radius;
-    public Round(Vector2 offset, double radius, int collisionFlag, RigidBody parent) {
+
+    public Round(RigidBody parent, Vector2 offset, double radius, int collisionFlag) {
+      this(parent, offset, radius, collisionFlag, null, null);
+    }
+
+    public Round(RigidBody parent, Vector2 offset, double radius, int collisionFlag, Consumer<Unit> onEnterVolume, Consumer<Unit> onLeaveVolume) {
+      this.parent = parent;
       this.offset = offset;
       this.closest = offset;
       this.radius = radius;
       this.collisionFlag = collisionFlag;
-      this.parent = parent;
+      this.onEnterVolume = onEnterVolume == null ? (u) -> {} : onEnterVolume;
+      this.onLeaveVolume = onLeaveVolume == null ? (u) -> {} : onLeaveVolume;
     }
     
     public double getRadius() {return radius;}
@@ -98,13 +111,20 @@ public abstract class Collider {
   public static class Square extends Collider {
     private double width;
     private double height;
-    public Square(Vector2 offset, double width, double height, int collisionFlag, RigidBody parent) {
+
+    public Square(RigidBody parent, Vector2 offset, double width, double height, int collisionFlag) {
+      this(parent, offset, width, height, collisionFlag, null, null);
+    }
+
+    public Square(RigidBody parent, Vector2 offset, double width, double height, int collisionFlag, Consumer<Unit> onEnterVolume, Consumer<Unit> onLeaveVolume) {
+      this.parent = parent;
       this.offset = offset;
       this.closest = offset;
       this.width = width;
       this.height = height;
       this.collisionFlag = collisionFlag;
-      this.parent = parent;
+      this.onEnterVolume = onEnterVolume == null ? (u) -> {} : onEnterVolume;
+      this.onLeaveVolume = onLeaveVolume == null ? (u) -> {} : onLeaveVolume;
     }
     
     public double getWidth() {return width;}
@@ -161,7 +181,7 @@ public abstract class Collider {
     return (collisionFlag & FLAG_TRIGGER_VOL) != 0;
   }
   
-  public void makeBulletInteractable() {
+  public void addBulletInteractability() {
     this.collisionFlag |= FLAG_COLLIDE_BULLETS;
   }
 
@@ -169,7 +189,7 @@ public abstract class Collider {
     this.collisionFlag &= ~FLAG_COLLIDE_BULLETS;
   }
 
-  public void makeUnitInteractable() {
+  public void addUnitInteractability() {
     this.collisionFlag |= FLAG_COLLIDE_UNITS;
   }
 
@@ -177,25 +197,47 @@ public abstract class Collider {
     this.collisionFlag &= ~FLAG_COLLIDE_UNITS;
   }
 
-  public void makeTriggerVolume() {
+  public void addTriggerVolume(Consumer<Unit> onEnterVolume, Consumer<Unit> onLeaveVolume) {
     this.collisionFlag |= FLAG_TRIGGER_VOL;
+    this.onEnterVolume = onEnterVolume == null ? (u) -> {} : onEnterVolume;
+    this.onLeaveVolume = onLeaveVolume == null ? (u) -> {} : onLeaveVolume;
   }
 
   public void removeTriggerVolume() {
     this.collisionFlag &= ~FLAG_TRIGGER_VOL;
+    this.onEnterVolume = (u) -> {};
+    this.onLeaveVolume = onEnterVolume;
   }
   
-  public void setSolid() {
+  public void setToTriggerVolume(Consumer<Unit> onEnterVolume, Consumer<Unit> onLeaveVolume) {
+    this.collisionFlag = FLAG_TRIGGER_VOL;
+    this.onEnterVolume = onEnterVolume == null ? (u) -> {} : onEnterVolume;
+    this.onLeaveVolume = onLeaveVolume == null ? (u) -> {} : onLeaveVolume;
+  }
+  
+  public void addSolidity() {
     this.collisionFlag |= FLAG_SOLID;
   }
   
-  public void setUnsolid() {
+  public void removeSolidity() {
     this.collisionFlag &= ~FLAG_SOLID;
+  }
+
+  public void setToSolid() {
+    this.collisionFlag = FLAG_SOLID;
   }
   
   public void toggleSolidness() {
-    if (isSolid()) setUnsolid();
-    else setSolid();
+    if (isSolid()) removeSolidity();
+    else addSolidity();
+  }
+
+  public void enterVolume(Unit u) {
+    onEnterVolume.accept(u);
+  }
+
+  public void leaveVolume(Unit u) {
+    onLeaveVolume.accept(u);
   }
   
   public RigidBody getParent() {return parent;}

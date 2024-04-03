@@ -21,9 +21,11 @@ import code.world.fixed.dividers.Door;
 import code.world.fixed.Light;
 import code.world.fixed.dividers.Wall;
 import code.world.inv.Gun;
+import code.world.inv.GunLauncher;
 import code.world.fixed.WorldObject;
 
 import code.world.unit.Dud;
+import code.world.unit.ItemUnit;
 import code.world.unit.Player;
 import code.world.unit.TestAI;
 import code.world.unit.Unit;
@@ -138,21 +140,25 @@ public class Scene {
   }
   
   public Tile getTile(Vector2 p) {
-    int x = Math.max(Math.min((int)(p.x/Tile.TILE_SIZE+mapSX/2), mapSX-1), 0);
-    int y = Math.max(Math.min((int)(p.y/Tile.TILE_SIZE+mapSY/2), mapSY-1), 0);
+    int x = MathHelp.clamp((int)(p.x/Tile.TILE_SIZE+mapSX/2), 0, mapSX-1);
+    int y = MathHelp.clamp((int)(p.y/Tile.TILE_SIZE+mapSY/2), 0, mapSY-1);
     return map[x][y];
   }
   
   public void addBullet(Bullet b) {
     bullets.add(b);
-    Vector2 p = b.getPos();
-    map[(int)MathHelp.clamp((p.x/Tile.TILE_SIZE)+mapSX/2, 0, mapSX-1)][(int)MathHelp.clamp((p.y/Tile.TILE_SIZE)+mapSY/2, 0, mapSY-1)].passOff(b);
+    getTile(b.getPosition()).passOff(b);
   }
   
   public void addUnit(Unit u) {
     units.add(u);
-    Vector2 p = u.getPosition();
-    map[(int)(p.x/Tile.TILE_SIZE)+mapSX/2][(int)(p.y/Tile.TILE_SIZE)+mapSY/2].passOff(u);
+    getTile(u.getPosition()).passOff(u);
+  }
+
+  public void removeUnit(Unit u) {
+    units.remove(u);
+    getTile(u.getPosition()).remove(u);
+    RigidBody.removeBody(u.getRenderedBody());
   }
 
   public void setDrawInterior(boolean drawInterior) {
@@ -346,19 +352,20 @@ public class Scene {
       else {type = "gap";}
       if (type.equals("Player")) {
         scene.player = new Player(
+          scene,
+          // new Gun(1200, 1, 1000, 100, 20, 0.96, true, new Gun(1200, 10, 150, 500, 16, 0.8, false)),
+          new Gun(1200, 1, 1000, 100, 20, 0.96, true, new GunLauncher((p, v) -> new ItemUnit(p.getScene(), null, p.getPosition(), p.getVelocity().add(v)), 1200, 1, 500, 0.96, true)),
+          new Vector2(scan.nextDouble(), scan.nextDouble()), 
+          new Vector2(scan.nextDouble(), scan.nextDouble()), 
           scan.nextDouble(), 
           scan.nextDouble(), 
-          scan.nextDouble(), 
-          scan.nextDouble(), 
-          scan.nextDouble(), 
-          new Gun(1200, 1, 1000, 100, 20, 0.96, true, new Gun(1200, 10, 150, 500, 16, 0.8, false)),
-          scene
+          scan.nextDouble()
         );
         scene.cam.setTarU(scene.player);
         scene.units.add(scene.player);
       }
-      else if (type.equals("Dud")) {scene.units.add(new Dud(scan.nextDouble(), scan.nextDouble(), scene));}
-      else if (type.equals("TestAI")) {scene.units.add(new TestAI(scan.nextDouble(), scan.nextDouble(), scene));}
+      else if (type.equals("Dud")) {scene.units.add(new Dud(scene, null, new Vector2(scan.nextDouble(), scan.nextDouble()), new Vector2(scan.nextDouble(), scan.nextDouble())));}
+      else if (type.equals("TestAI")) {scene.units.add(new TestAI(scene, new Gun(1200, 1, 1000, 160, 30, 0.96, true), new Vector2(scan.nextDouble(), scan.nextDouble()), new Vector2(scan.nextDouble(), scan.nextDouble())));}
       scan.close();
     }
 

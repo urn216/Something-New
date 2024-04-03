@@ -130,6 +130,8 @@ public class Tile {
 
   public void passOff(Bullet b) {bullets.add(b);}
 
+  public void remove(Unit u) {units.remove(u);}
+
   public List<WorldObject> getNBOs() {
     List<WorldObject> objs = new ArrayList<WorldObject>();
     for (int i = 0; i<3; i++) {
@@ -161,7 +163,7 @@ public class Tile {
     rbs.addAll(nbOs);
     for (int i = 0; i<units.size(); i++) {
       Unit unit = units.get(i);
-      unit.update(nbOs, rbs);
+      unit.update(rbs);
       Vector2 unitPos = unit.getPosition().subtract(topLeft).scale(1.0/TILE_SIZE).add(1);
       int x = (int)MathHelp.clamp(unitPos.x, 0, 2);
       int y = (int)MathHelp.clamp(unitPos.y, 0, 2);
@@ -177,7 +179,7 @@ public class Tile {
         b--;
         continue;
       }
-      Vector2 bulletPos = bullet.getPos().subtract(topLeft).scale(1.0/TILE_SIZE).add(1);
+      Vector2 bulletPos = bullet.getPosition().subtract(topLeft).scale(1.0/TILE_SIZE).add(1);
       int x = (int)MathHelp.clamp(bulletPos.x, 0, 2);
       int y = (int)MathHelp.clamp(bulletPos.y, 0, 2);
 

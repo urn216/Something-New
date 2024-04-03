@@ -7,7 +7,7 @@ import mki.world.Material;
 import mki.world.object.primitive.Quad;
 import code.world.Collider;
 import code.world.Tile;
-
+import code.world.unit.Player;
 import code.world.unit.Unit;
 import code.world.fixed.Direction;
 import code.world.fixed.WorldObject;
@@ -39,35 +39,35 @@ public class Door extends WorldObject {
         xOff = 0.5;
         width = Tile.TILE_SIZE+Wall.WALL_THICKNESS;
         height = Wall.WALL_THICKNESS;
-        colliders.add(new Collider.Square(new Vector2(-25, 0), 24-Wall.WALL_THICKNESS/4, height-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID, this));
-        colliders.add(new Collider.Square(new Vector2( 25, 0), 24-Wall.WALL_THICKNESS/4, height-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID, this));
-        colliders.add(new Collider.Square(new Vector2(), 28.5, height-4, Collider.FLAG_SOLID, this));
+        colliders.add(new Collider.Square(this, new Vector2(-25, 0), 24-Wall.WALL_THICKNESS/4, height-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID));
+        colliders.add(new Collider.Square(this, new Vector2( 25, 0), 24-Wall.WALL_THICKNESS/4, height-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID));
+        colliders.add(new Collider.Square(this, new Vector2(), 28.5, height-4, Collider.FLAG_SOLID));
       break;
       case West:
         yOff = 0.5;
         width = Wall.WALL_THICKNESS;
         height = Tile.TILE_SIZE+Wall.WALL_THICKNESS;
-        colliders.add(new Collider.Square(new Vector2(0, -25), width-Wall.WALL_THICKNESS/4, 24-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID, this));
-        colliders.add(new Collider.Square(new Vector2(0,  25), width-Wall.WALL_THICKNESS/4, 24-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID, this));
-        colliders.add(new Collider.Square(new Vector2(), width-4, 28.5, Collider.FLAG_SOLID, this));
+        colliders.add(new Collider.Square(this, new Vector2(0, -25), width-Wall.WALL_THICKNESS/4, 24-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID));
+        colliders.add(new Collider.Square(this, new Vector2(0,  25), width-Wall.WALL_THICKNESS/4, 24-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID));
+        colliders.add(new Collider.Square(this, new Vector2(), width-4, 28.5, Collider.FLAG_SOLID));
       break;
       case South:
         xOff = 0.5;
         yOff = 1.0;
         width = Tile.TILE_SIZE+Wall.WALL_THICKNESS;
         height = Wall.WALL_THICKNESS;
-        colliders.add(new Collider.Square(new Vector2(-25, 0), 24-Wall.WALL_THICKNESS/4, height-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID, this));
-        colliders.add(new Collider.Square(new Vector2( 25, 0), 24-Wall.WALL_THICKNESS/4, height-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID, this));
-        colliders.add(new Collider.Square(new Vector2(), 28.5, height-4, Collider.FLAG_SOLID, this));
+        colliders.add(new Collider.Square(this, new Vector2(-25, 0), 24-Wall.WALL_THICKNESS/4, height-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID));
+        colliders.add(new Collider.Square(this, new Vector2( 25, 0), 24-Wall.WALL_THICKNESS/4, height-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID));
+        colliders.add(new Collider.Square(this, new Vector2(), 28.5, height-4, Collider.FLAG_SOLID));
       break;
       case East:
         xOff = 1.0;
         yOff = 0.5;
         width = Wall.WALL_THICKNESS;
         height = Tile.TILE_SIZE+Wall.WALL_THICKNESS;
-        colliders.add(new Collider.Square(new Vector2(0, -25), width-Wall.WALL_THICKNESS/4, 24-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID, this));
-        colliders.add(new Collider.Square(new Vector2(0,  25), width-Wall.WALL_THICKNESS/4, 24-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID, this));
-        colliders.add(new Collider.Square(new Vector2(), width-4, 28.5, Collider.FLAG_SOLID, this));
+        colliders.add(new Collider.Square(this, new Vector2(0, -25), width-Wall.WALL_THICKNESS/4, 24-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID));
+        colliders.add(new Collider.Square(this, new Vector2(0,  25), width-Wall.WALL_THICKNESS/4, 24-Wall.WALL_THICKNESS/4, Collider.FLAG_SOLID));
+        colliders.add(new Collider.Square(this, new Vector2(), width-4, 28.5, Collider.FLAG_SOLID));
       break;
     
       default: throw new RuntimeException("Invalid direction for type Door");
@@ -81,35 +81,38 @@ public class Door extends WorldObject {
       1,
       new Material(new Vector3I(100), 0f, new Vector3())
     );
-    colliders.add(new Collider.Square(new Vector2(), Tile.TILE_SIZE/2, Tile.TILE_SIZE/2, Collider.FLAG_TRIGGER_VOL, this));
+    colliders.add(new Collider.Square(this, new Vector2(), Tile.TILE_SIZE/2, Tile.TILE_SIZE/2, Collider.FLAG_TRIGGER_VOL, (u) -> {
+      if (u instanceof Player) highlight = true;
+      else open();
+    }, (u) -> {
+      if (u instanceof Player) highlight = false;
+      else close();
+    }));
   }
   
-  public void doTrigger() {
-    highlight = true;
-  }
-  
-  public void undoTrigger() {
-    highlight = false;
-  }
-  
-  public void activate(Unit user) {
-    colliders.get(2).setUnsolid();
+  public void open() {
+    colliders.get(2).removeSolidity();
     this.renderedBody.setPosition(new Vector3(renderedBody.getPosition().x, Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN, renderedBody.getPosition().z));
     open = true;
   }
   
-  public void deactivate(Unit user) {
+  public void close() {
     for (Unit i : getTile().getNBUs()) {
       if (colliders.get(2).collide(i.getColliders().get(0))!=null) {return;}
     }
-    colliders.get(2).setSolid();
+    colliders.get(2).addSolidity();
     this.renderedBody.setPosition(new Vector3(renderedBody.getPosition().x, (Tile.TILE_SIZE/4-1)*Tile.UNIT_SCALE_DOWN, renderedBody.getPosition().z));
     open = false;
   }
   
-  public void toggle(Unit user) {
-    if (open) deactivate(user);
-    else activate(user);
+  public void toggle() {
+    if (open) close();
+    else open();
+  }
+
+  @Override
+  public void use(Unit user) {
+    toggle();
   }
   
   @Override

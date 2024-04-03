@@ -4,7 +4,7 @@ import mki.math.vector.Vector2;
 import code.core.Core;
 import code.world.Collider;
 
-import code.world.inv.Gun;
+import code.world.inv.Item;
 import code.world.scene.Scene;
 
 import java.util.*;
@@ -21,12 +21,13 @@ public class TestAI extends Unit {
   /**
   * Constructor for objects of class TestAI
   */
-  public TestAI(double X, double Y, Scene scene) {
+  public TestAI(Scene scene, Item item, Vector2 position, Vector2 velocity) {
     super(
       scene,                            //scene
       8,                                //size
       Color.getHSBColor((float)Math.random(), 1f, 0.5f),
-      new Vector2(X, Y),                //pos
+      position,                         //pos
+      velocity,
       new Vector2(),                    //dir
       3000/Core.TICKS_PER_SECOND,       //walk-force
       140/Core.TICKS_PER_SECOND,        //max-velocity
@@ -35,7 +36,7 @@ public class TestAI extends Unit {
       0                                 //elasticity
     );
 
-    held = new Gun(1200, 1, 1000, 160, 30, 0.96, true);
+    held = item;
   }
 
   public void move(List<Collider> colliders) {
@@ -55,6 +56,4 @@ public class TestAI extends Unit {
 
     step(colliders);
   }
-
-  public Unit summon(double x, double y, Scene s) {return new TestAI(x, y, s);}
 }

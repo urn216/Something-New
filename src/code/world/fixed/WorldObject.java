@@ -54,15 +54,8 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject> 
 
   public void takeDamage(double damage) {}
 
-  public void doTrigger() {}
-
-  public void undoTrigger() {}
-
-  public void activate(Unit user) {}
-
-  public void deactivate(Unit user) {}
-
-  public void toggle(Unit user) {}
+  @Override
+  public void use(Unit user) {}
 
   public void move(double xOff, double yOff) {
     renderedBody.setPosition(renderedBody.getPosition().add(xOff*Tile.UNIT_SCALE_DOWN, 0, -yOff*Tile.UNIT_SCALE_DOWN));

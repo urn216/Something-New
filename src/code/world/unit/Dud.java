@@ -2,7 +2,7 @@ package code.world.unit;
 
 import mki.math.vector.Vector2;
 import code.core.Core;
-
+import code.world.inv.Item;
 import code.world.scene.Scene;
 
 /**
@@ -15,11 +15,12 @@ public class Dud extends Unit {
   /**
   * Constructor for objects of class Dud
   */
-  public Dud(double X, double Y, Scene scene) {
+  public Dud(Scene scene, Item item, Vector2 position, Vector2 velocity) {
     super(
       scene,                            //scene
       8,                                //size
-      new Vector2(X, Y),                //pos
+      position,                         //pos
+      velocity,
       new Vector2(),                    //dir
       0,                                //walk-force
       240/Core.TICKS_PER_SECOND,        //max-velocity
@@ -28,6 +29,4 @@ public class Dud extends Unit {
       0                                 //elasticity
     );
   }
-
-  public Unit summon(double x, double y, Scene s) {return new Dud(x, y, s);}
 }

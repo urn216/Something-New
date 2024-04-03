@@ -67,7 +67,7 @@ public class Wall extends WorldObject {
       1,
       new Material(new Vector3I(150), 0f, new Vector3())
     );
-    colliders.add(new Collider.Square(new Vector2(), width-WALL_THICKNESS/4, height-WALL_THICKNESS/4, Collider.FLAG_SOLID, this));
+    colliders.add(new Collider.Square(this, new Vector2(), width-WALL_THICKNESS/4, height-WALL_THICKNESS/4, Collider.FLAG_SOLID));
   }
   
   @Override
