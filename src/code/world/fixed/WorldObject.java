@@ -2,6 +2,9 @@ package code.world.fixed;
 
 import mki.math.vector.Vector2;
 import mki.math.vector.Vector3;
+// import mki.math.vector.Vector3I;
+// import mki.world.Material;
+// import mki.world.object.primitive.Face;
 import code.world.Collider;
 import code.world.RigidBody;
 import code.world.Tile;
@@ -32,38 +35,51 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject> 
 
   public Vector2 getOrigin() {return origin;}
 
-  public Vector2 getPosition() {return new Vector2(renderedBody.getPosition().x*Tile.UNIT_SCALE_UP, -renderedBody.getPosition().z*Tile.UNIT_SCALE_UP);}
+  @Override
+  public Vector2 getPosition() {return new Vector2(renderedBody.getPosition().x*Tile.SCALE_M_TO_U, -renderedBody.getPosition().z*Tile.SCALE_M_TO_U);}
 
+  @Override
   public Vector2 getVelocity() {return new Vector2();}
 
+  @Override
   public List<Collider> getColliders() {return colliders;}
 
+  @Override
   public Scene getScene() {return scene;}
 
   public Tile getTile() {return scene.getTile(getPosition());}
 
+  @Override
   public mki.world.RigidBody getRenderedBody() {
     return renderedBody;
   }
 
+  public abstract int getShape();
+
   public void setOrigin(Vector2 pos) {origin = pos;}
 
-  public void setPosition(Vector2 position) {renderedBody.setPosition(new Vector3(position.x*Tile.UNIT_SCALE_DOWN, Tile.TILE_SIZE/4*Tile.UNIT_SCALE_DOWN, -position.y*Tile.UNIT_SCALE_DOWN));}
+  @Override
+  public void setPosition(Vector2 position) {renderedBody.setPosition(new Vector3(position.x*Tile.SCALE_U_TO_M, Tile.TILE_SIZE_U/4*Tile.SCALE_U_TO_M, -position.y*Tile.SCALE_U_TO_M));}
 
   public void setParent(Scene s) {scene = s;}
 
-  public void takeDamage(double damage) {}
+  @Override
+  public void takeDamage(double damage, Vector2 location) {
+    // double size = damage*Tile.UNIT_SCALE_DOWN/20+Tile.UNIT_SCALE_DOWN*3;
+    // new Face(new Vector3(location.x*Tile.UNIT_SCALE_DOWN, 8*Tile.UNIT_SCALE_DOWN, -location.y*Tile.UNIT_SCALE_DOWN-0.008), size, size, new Material(new Vector3I(150), 0, new Vector3(), "decal/hole.png"))
+    // .setRoll(Math.random()*360);
+  }
 
   @Override
   public void use(Unit user) {}
 
   public void move(double xOff, double yOff) {
-    renderedBody.setPosition(renderedBody.getPosition().add(xOff*Tile.UNIT_SCALE_DOWN, 0, -yOff*Tile.UNIT_SCALE_DOWN));
+    renderedBody.setPosition(renderedBody.getPosition().add(xOff*Tile.SCALE_U_TO_M, 0, -yOff*Tile.SCALE_U_TO_M));
     origin = origin.add(xOff, yOff);
   }
 
   public void move(Vector2 offset) {
-    renderedBody.setPosition(renderedBody.getPosition().add(offset.x*Tile.UNIT_SCALE_DOWN, 0, -offset.y*Tile.UNIT_SCALE_DOWN));
+    renderedBody.setPosition(renderedBody.getPosition().add(offset.x*Tile.SCALE_U_TO_M, 0, -offset.y*Tile.SCALE_U_TO_M));
     origin = origin.add(offset);
   }
 
@@ -79,7 +95,7 @@ public abstract class WorldObject implements RigidBody, Comparable<WorldObject> 
   }
 
   public String toString() {
-    return this.getClass().getSimpleName()+" "+(int)(origin.x/Tile.TILE_SIZE)+" "+(int)(origin.y/Tile.TILE_SIZE)+" "+direction;
+    return this.getClass().getSimpleName()+" "+(int)(origin.x/Tile.TILE_SIZE_U)+" "+(int)(origin.y/Tile.TILE_SIZE_U)+" "+direction;
   }
 
   public int hashCode() {

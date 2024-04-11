@@ -36,9 +36,9 @@ public class Bullet {
     this.lifetime = lifetime;
     this.damage = damage;
     renderedBullet = new Cube(
-      new Vector3(this.position.x*Tile.UNIT_SCALE_DOWN, parent.getRenderedBody().getPosition().y, -this.position.y*Tile.UNIT_SCALE_DOWN), 
-      Tile.UNIT_SCALE_DOWN, 
-      new Material(new Vector3I(200, 0, 0), 0f, new Vector3(4, 0, 0))
+      new Vector3(this.position.x*Tile.SCALE_U_TO_M, parent.getRenderedBody().getPosition().y*1.5, -this.position.y*Tile.SCALE_U_TO_M), 
+      Tile.SCALE_U_TO_M, 
+      new Material(new Vector3I(200, 0, 0), 0f, new Vector3(1, 0, 0))
     );
   }
 
@@ -60,14 +60,14 @@ public class Bullet {
     }
     if (ray.hasHit()) {
       position = ray.getHitLocation();
-      this.renderedBullet.setPosition(new Vector3(this.position.x*Tile.UNIT_SCALE_DOWN, parent.getRenderedBody().getPosition().y, -this.position.y*Tile.UNIT_SCALE_DOWN));
-      ray.getHitObject().takeDamage(damage);
+      this.renderedBullet.setPosition(new Vector3(this.position.x*Tile.SCALE_U_TO_M, parent.getRenderedBody().getPosition().y*1.5, -this.position.y*Tile.SCALE_U_TO_M));
+      ray.getHitObject().takeDamage(damage, position);
       alive = false;
       lifetime = 1;
     }
     else {
       position = position.add(velocity);
-      this.renderedBullet.setPosition(new Vector3(this.position.x*Tile.UNIT_SCALE_DOWN, parent.getRenderedBody().getPosition().y, -this.position.y*Tile.UNIT_SCALE_DOWN));
+      this.renderedBullet.setPosition(new Vector3(this.position.x*Tile.SCALE_U_TO_M, parent.getRenderedBody().getPosition().y*1.5, -this.position.y*Tile.SCALE_U_TO_M));
     }
     if (lifetime <= 0) {alive = false;}
   }

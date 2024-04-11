@@ -19,19 +19,34 @@ import java.awt.Color;
 * @version (a version number or a date)
 */
 public class Tile {
-  public static final int TILE_SIZE = 64;
+  public static final int TILE_SIZE_U = 120;
+  public static final double TILE_SIZE_M = 3;
 
-  public static final double UNIT_SCALE_UP   = TILE_SIZE/4.0;
-  public static final double UNIT_SCALE_DOWN = 1/UNIT_SCALE_UP;
+  public static final int MINI_TILE_SIZE = 40;
 
-  private Vector2 position;
-  private Vector2 origin;
+  //One game-unit is 25mm. Tile size is 3m or 120u
+  public static final double SCALE_M_TO_U = TILE_SIZE_U/TILE_SIZE_M;
+  public static final double SCALE_U_TO_M = 1/SCALE_M_TO_U;
 
-  private boolean active;
+  public static final int OBJECTS_FLOOR   = 9;
+  public static final int OBJECTS_BORDER  = 4;
+  public static final int OBJECTS_CEILING = 1;
+
+  public static final int OFFSET_FLOOR   = 0;
+  public static final int OFFSET_BORDER  = OFFSET_FLOOR+OBJECTS_FLOOR;
+  public static final int OFFSET_CEILING = OFFSET_BORDER+OBJECTS_BORDER;
+
+  private static final int HAS_FLOOR_BIT = 1 << (OFFSET_CEILING + OBJECTS_CEILING);
+  
+  private final WorldObject[] fixedObjects = new WorldObject[OBJECTS_FLOOR + OBJECTS_BORDER + OBJECTS_CEILING];
+  private int occupiedSpace;
 
   private List<Unit> units = new ArrayList<Unit>();
-  private List<WorldObject> fixedObj = new ArrayList<WorldObject>();
   private List<Bullet> bullets = new ArrayList<Bullet>();
+
+  private final int x, y;
+
+
 
   /** Whther there's a solid, airtight, wall to the [Left, Right, Up, Down] */
   // private boolean[] walled = {false, false, false, false};
@@ -42,56 +57,26 @@ public class Tile {
   /**
   * Constructor for Tiles
   */
-  public Tile(double x, double y, int active) {
-    origin = new Vector2(x*TILE_SIZE, y*TILE_SIZE);
-    position = new Vector2(x*TILE_SIZE+TILE_SIZE/2.0, y*TILE_SIZE+TILE_SIZE/2.0);
-    this.active = active != 0;
+  public Tile(int x, int y, int active) {
+    this.x = x;
+    this.y = y;
+    this.occupiedSpace = active != 0 ? HAS_FLOOR_BIT : 0;
   }
 
-  // public boolean onScreen(Camera cam) {
-  //   if (!active && fixedObj.isEmpty() && units.isEmpty() && bullets.isEmpty()) {
-  //     visible = false;
-  //     return visible;
-  //   }
-  //   Vector2 camPos = cam.getPos();
-  //   Vector2 camSize = cam.getSize();
-  //   if (!((camPos.x-camSize.x < position.x+TILE_SIZE/2 && camPos.y-camSize.y < position.y+TILE_SIZE/2) && (camPos.x+camSize.x > position.x-TILE_SIZE/2 && camPos.y+camSize.y > position.y-TILE_SIZE/2))) {
-  //     visible = false;
-  //     return visible;
-  //   }
-  //   visible = true;
-  //   if (!active) return false;
-  //   return visible;
-  // }
-
-  // public boolean onScreen(Player player, int rangeX, int rangeY) {
-  //   if (!active && fixedObj.isEmpty()) {
-  //     visible = false;
-  //     return false;
-  //   }
-  //   Vector2 pPos = player.getPos();
-  //   if ((pPos.x-rangeX < position.x+TILE_SIZE/2 && pPos.y-rangeY < position.y+TILE_SIZE/2) && (pPos.x+rangeX > position.x-TILE_SIZE/2 && pPos.y+rangeY > position.y-TILE_SIZE/2)) {
-  //     visible = true;
-  //     if (!active) return false;
-  //     return true;
-  //   }
-  //   visible = false;
-  //   return false;
-  // }
-
   public void activate() {
-    active = true; 
+    this.occupiedSpace |= HAS_FLOOR_BIT;
   }
 
   public void deactivate() {
-    active = false;
+    this.occupiedSpace &= ~HAS_FLOOR_BIT;
   }
 
   public void toggle() {
-    active = !active;
+    if (isActive()) deactivate();
+    else activate();
   }
 
-  public boolean isActive() {return active;}
+  public boolean isActive() {return (this.occupiedSpace & HAS_FLOOR_BIT) != 0;}
 
   public void getNeighbours(Tile[][] map, int x, int y, int mapSX, int mapSY) {
     nb = new Tile[3][3];
@@ -103,43 +88,61 @@ public class Tile {
     nb[1][1] = null;
   }
 
-  public void bigUpdate(Collection<Unit> allUnits, Collection<WorldObject> objs) {
-    units.clear();
-    fixedObj.clear();
-    bullets.clear();
-    for (Unit unit : allUnits) {
-      Vector2 unitPos = unit.getPosition();
-      if (unitPos.x >= position.x-TILE_SIZE/2.0 && unitPos.x < position.x+TILE_SIZE/2.0 && unitPos.y >= position.y-TILE_SIZE/2.0 && unitPos.y < position.y+TILE_SIZE/2.0) {
-        units.add(unit);
-      }
-    }
-    for (WorldObject obj : objs) {
-      Vector2 objPos = obj.getOrigin();
-      if (objPos.x >= position.x-TILE_SIZE/2.0 && objPos.x < position.x+TILE_SIZE/2.0 && objPos.y >= position.y-TILE_SIZE/2.0 && objPos.y < position.y+TILE_SIZE/2.0) {
-        fixedObj.add(obj);
-        // if (obj instanceof Light light) light.calculateShadows(objs);
-      }
-    }
-  }
-
-  public List<WorldObject> getObjs() {return fixedObj;}
+  public WorldObject[] getObjects() {return this.fixedObjects;}
 
   public List<Unit> getUnits() {return units;}
 
-  public void passOff(Unit u) {units.add(u);}
-
-  public void passOff(Bullet b) {bullets.add(b);}
-
+  public void add(Unit u) {units.add(u);}
+  
   public void remove(Unit u) {units.remove(u);}
+
+  public void add(Bullet b) {bullets.add(b);}
+
+  public void remove(Bullet b) {bullets.remove(b);}
+
+  public boolean addObject(WorldObject o) {
+    int shape = o.getShape();
+    if ((this.occupiedSpace & shape) != 0) return false;
+
+    this.occupiedSpace |= shape;
+    for (int i = 0; i < fixedObjects.length; i++) {
+      if (((1 << i) & shape) != 0) fixedObjects[i] = o;
+    }
+    return true;
+  }
+
+  public boolean removeObject(WorldObject o) {
+    boolean found = false;
+    for (int i = 0; i < fixedObjects.length; i++) {
+      if (fixedObjects[i] != o) continue;
+      fixedObjects[i] = null;
+      this.occupiedSpace &= ~(1<<i);
+      found = true;
+    }
+    return found;
+  }
+
+  public void clearAll() {
+    this.occupiedSpace &= HAS_FLOOR_BIT;
+    this.bullets.clear();
+    this.units.clear();
+    for (int i = 0; i < fixedObjects.length; i++) {
+      fixedObjects[i] = null;
+    }
+  }
 
   public List<WorldObject> getNBOs() {
     List<WorldObject> objs = new ArrayList<WorldObject>();
     for (int i = 0; i<3; i++) {
       for (int j = 0; j<3; j++) {
-        if (nb[i][j]!=null) {objs.addAll(nb[i][j].getObjs());}
+        if (nb[i][j]!=null) for (int k = 0; k < fixedObjects.length; k++) {
+          if (nb[i][j].getObjects()[k] != null) objs.add(nb[i][j].getObjects()[k]);
+        }
       }
     }
-    objs.addAll(fixedObj);
+    for (int k = 0; k < fixedObjects.length; k++) {
+      if (fixedObjects[k] != null) objs.add(fixedObjects[k]);
+    }
     return objs;
   }
 
@@ -156,19 +159,18 @@ public class Tile {
 
   public void update() {
     if (units.isEmpty()&&bullets.isEmpty()) {return;}
-    Vector2 topLeft = new Vector2(position.x-TILE_SIZE/2.0, position.y-TILE_SIZE/2.0);
     List<WorldObject> nbOs = getNBOs();
-    List<RigidBody> rbs = new ArrayList<RigidBody>(units.size()+fixedObj.size());
+    List<RigidBody> rbs = new ArrayList<RigidBody>(units.size()+fixedObjects.length);
     rbs.addAll(getNBUs());
     rbs.addAll(nbOs);
     for (int i = 0; i<units.size(); i++) {
       Unit unit = units.get(i);
       unit.update(rbs);
-      Vector2 unitPos = unit.getPosition().subtract(topLeft).scale(1.0/TILE_SIZE).add(1);
+      Vector2 unitPos = unit.getPosition().subtract(x*TILE_SIZE_U, y*TILE_SIZE_U).scale(1.0/TILE_SIZE_U).add(1);
       int x = (int)MathHelp.clamp(unitPos.x, 0, 2);
       int y = (int)MathHelp.clamp(unitPos.y, 0, 2);
 
-      if (nb[x][y] != null) {nb[x][y].passOff(unit); units.remove(i); i--;}
+      if (nb[x][y] != null) {nb[x][y].add(unit); units.remove(i); i--;}
     }
 
     for (int b = 0; b < bullets.size(); b++) {
@@ -179,33 +181,35 @@ public class Tile {
         b--;
         continue;
       }
-      Vector2 bulletPos = bullet.getPosition().subtract(topLeft).scale(1.0/TILE_SIZE).add(1);
+      Vector2 bulletPos = bullet.getPosition().subtract(x*TILE_SIZE_U, y*TILE_SIZE_U).scale(1.0/TILE_SIZE_U).add(1);
       int x = (int)MathHelp.clamp(bulletPos.x, 0, 2);
       int y = (int)MathHelp.clamp(bulletPos.y, 0, 2);
 
-      if (nb[x][y] != null) {nb[x][y].passOff(bullet); bullets.remove(b); b--;}
+      if (nb[x][y] != null) {nb[x][y].add(bullet); bullets.remove(b); b--;}
     }
   }
 
   public void draw(Graphics2D g, Camera cam) {
-    if (!active) return;
+    if (!isActive()) return;
     double z = cam.getZoom();
     double conX = cam.conX();
     double conY = cam.conY();
     g.setColor(Color.lightGray);
-    g.fill(new Rectangle2D.Double(origin.x*z-conX, origin.y*z-conY, TILE_SIZE*z, TILE_SIZE*z));
+    g.fill(new Rectangle2D.Double(x*TILE_SIZE_U*z-conX, y*TILE_SIZE_U*z-conY, TILE_SIZE_U*z, TILE_SIZE_U*z));
     g.setColor(Color.gray);
-    g.draw(new Rectangle2D.Double(origin.x*z-conX, origin.y*z-conY, TILE_SIZE*z, TILE_SIZE*z));
+    g.draw(new Rectangle2D.Double(x*TILE_SIZE_U*z-conX, y*TILE_SIZE_U*z-conY, TILE_SIZE_U*z, TILE_SIZE_U*z));
   }
 
   public void drawGhost(Graphics2D g, Camera cam, Color ghostColour) {
     double z = cam.getZoom();
     g.setColor(ghostColour);
-    g.fill(new Rectangle2D.Double(origin.x*z-cam.conX(), origin.y*z-cam.conY(), TILE_SIZE*z, TILE_SIZE*z));
+    g.fill(new Rectangle2D.Double(x*TILE_SIZE_U*z-cam.conX(), y*TILE_SIZE_U*z-cam.conY(), TILE_SIZE_U*z, TILE_SIZE_U*z));
   }
 
   public void drawLowerObjects(Graphics2D g) {
-
+    for (int i = 0; i < OBJECTS_FLOOR; i++) {
+      if (fixedObjects[i] != null) fixedObjects[i].draw(g);
+    }
   }
 
   public void drawUnits(Graphics2D g) {
@@ -221,8 +225,8 @@ public class Tile {
   }
 
   public void drawHigherObjects(Graphics2D g) {
-    for (int i = 0; i < fixedObj.size(); i++) {
-      fixedObj.get(i).draw(g);
+    for (int i = OFFSET_BORDER; i < fixedObjects.length; i++) {
+      if (fixedObjects[i] != null) fixedObjects[i].draw(g);
     }
   }
 }

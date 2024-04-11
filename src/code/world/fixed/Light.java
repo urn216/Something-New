@@ -25,7 +25,7 @@ import java.awt.Color;
 * Lights and stuff
 */
 public class Light extends WorldObject {
-  public static final double RANGE = Tile.TILE_SIZE*3;
+  public static final double RANGE = Tile.TILE_SIZE_U*3;
   
   private static final float[] fs = {0f, 1f};
   private static final Color[] cs = {new Color(0), new Color(0, true)};
@@ -39,10 +39,15 @@ public class Light extends WorldObject {
   */
   public Light(double x, double y, boolean functioning, Scene scene) {
     this.scene = scene;
-    this.origin = new Vector2(x*Tile.TILE_SIZE, y*Tile.TILE_SIZE);
+    this.origin = new Vector2(x*Tile.TILE_SIZE_U, y*Tile.TILE_SIZE_U);
     // Vector2 position = origin.add(Tile.TILE_SIZE/2);
-    this.renderedBody = new Cube(new Vector3(origin.x+Tile.TILE_SIZE/2, Tile.TILE_SIZE/2-2, -origin.y-Tile.TILE_SIZE/2).scale(Tile.UNIT_SCALE_DOWN), 6*Tile.UNIT_SCALE_DOWN, new Material(new Vector3I(150), 0f, new Vector3(functioning ? 2*Tile.TILE_SIZE : 0)));
-    this.width = 6;
+    this.width = 12;
+
+    this.renderedBody = new Cube(
+      new Vector3((x+0.5)*Tile.TILE_SIZE_M, Wall.WALL_HEIGHT_M-4*Tile.SCALE_U_TO_M, -(y+0.5)*Tile.TILE_SIZE_M), 
+      this.width*Tile.SCALE_U_TO_M, 
+      new Material(new Vector3I(150), 0f, new Vector3(functioning ? Tile.TILE_SIZE_U : 0))
+    );
     // colliders.add(new Collider.Round(new Vector2(), 5, Collider.FLAG_EMPTY, this));
 
     this.functioning = functioning;
@@ -53,7 +58,7 @@ public class Light extends WorldObject {
 
     List<WorldObject> localObj = new ArrayList<WorldObject>();
     List<Ray> rays = new ArrayList<Ray>();
-    double limit = RANGE*RANGE+Tile.TILE_SIZE*Tile.TILE_SIZE;
+    double limit = RANGE*RANGE+Tile.TILE_SIZE_U*Tile.TILE_SIZE_U;
     Vector2 position = getPosition();
     for (WorldObject obj : objs) {
       if (obj.getPosition().subtract(position).magsquare() < limit) {
@@ -81,8 +86,8 @@ public class Light extends WorldObject {
       if (ray.hasHit()) this.rays.add(ray);
     }
 
-    int conX = scene.getMapSX()/2*Tile.TILE_SIZE;
-    int conY = scene.getMapSY()/2*Tile.TILE_SIZE;
+    int conX = scene.getMapSX()/2*Tile.TILE_SIZE_U;
+    int conY = scene.getMapSY()/2*Tile.TILE_SIZE_U;
 
     g.setPaint(new java.awt.RadialGradientPaint((float)(position.x+conX), (float)(position.y+conY), (float)(RANGE), fs, cs));
     // for (int i = 0; i < this.rays.size(); i++) { //WINDING IS VERY WRONG
@@ -99,12 +104,17 @@ public class Light extends WorldObject {
     g.fillRect(0, 0, conX*2, conY*2);
   }
 
+  @Override
+  public int getShape() {
+    return 1<<Tile.OFFSET_CEILING;
+  }
+
   public void draw(Graphics2D g) {
     double z = scene.getCam().getZoom();
     double conX = scene.getCam().conX();
     double conY = scene.getCam().conY();
     g.setColor(this.functioning ? Color.gray : Wall.WALL_COLOUR);
-    g.fill(new Ellipse2D.Double((renderedBody.getPosition().x*Tile.UNIT_SCALE_UP-width/2)*z-conX, (-renderedBody.getPosition().z*Tile.UNIT_SCALE_UP-width/2)*z-conY, width*z, width*z));
+    g.fill(new Ellipse2D.Double((renderedBody.getPosition().x*Tile.SCALE_M_TO_U-width/2)*z-conX, (-renderedBody.getPosition().z*Tile.SCALE_M_TO_U-width/2)*z-conY, width*z, width*z));
     
     // g.setColor(Color.blue);
     // for (Ray r : rays) {
@@ -114,7 +124,7 @@ public class Light extends WorldObject {
   }
 
   public String toString() {
-    return this.getClass().getSimpleName()+" "+(int)(origin.x/Tile.TILE_SIZE)+" "+(int)(origin.y/Tile.TILE_SIZE)+" "+functioning;
+    return this.getClass().getSimpleName()+" "+(int)(origin.x/Tile.TILE_SIZE_U)+" "+(int)(origin.y/Tile.TILE_SIZE_U)+" "+functioning;
   }
 
   public static Decal createShadowMap(Collection<WorldObject> fixedObj, Tile[][] map, int width, int height) {
@@ -131,7 +141,7 @@ public class Light extends WorldObject {
       for (int j = 0; j < map[i].length; j++) {
         if (map[i][j].isActive()) continue;
 
-        g.fillRect(i*Tile.TILE_SIZE, j*Tile.TILE_SIZE, Tile.TILE_SIZE, Tile.TILE_SIZE);
+        g.fillRect(i*Tile.TILE_SIZE_U, j*Tile.TILE_SIZE_U, Tile.TILE_SIZE_U, Tile.TILE_SIZE_U);
       }
     }
     g.dispose();

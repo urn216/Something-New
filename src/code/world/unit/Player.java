@@ -19,6 +19,8 @@ public class Player extends Unit {
 
   public static final int DEFAULT_HITPOINTS = 160;
 
+  private static final double EYE_LEVEL = 1.8;
+
   private final Camera3D viewPort;
 
   /**
@@ -27,18 +29,18 @@ public class Player extends Unit {
   public Player(Scene scene, Item held, Vector2 position, Vector2 velocity, double pitch, double yaw, double hitpoints) {
     super(
       scene,                            //scene
-      8,                                //radius
+      13,                               //radius
       position,                         //pos
       velocity,
       new Vector2(pitch, yaw),          //dir
-      6000/Core.TICKS_PER_SECOND,       //walk-force
-      240/Core.TICKS_PER_SECOND,        //max-velocity
-      100,                              //mass
+      12000/Core.TICKS_PER_SECOND,      //walk-force
+      480/Core.TICKS_PER_SECOND,        //max-velocity
+      150,                              //mass
       hitpoints,                        //hitpoints
       0                                 //elasticity
     );
 
-    this.viewPort = new Camera3D(this.renderedBody.getPosition(), 144, 81, 80, Renderer.rasterizer());
+    this.viewPort = new Camera3D(this.renderedBody.getPosition().scale(1, EYE_LEVEL, 1), 144, 81, 80, Renderer.rasterizer());
     this.viewPort.setRotation(pitch, yaw, 0);
 
     // held = new Gun(this, 40, 1, 30, 168, 15, 0.96, true);
@@ -108,13 +110,13 @@ public class Player extends Unit {
   @Override
   public void offsetPosition(double x, double y) {
     super.offsetPosition(x, y);
-    this.viewPort.setPosition(this.renderedBody.getPosition().add(0, 8*Tile.UNIT_SCALE_DOWN, 0));
+    this.viewPort.setPosition(this.renderedBody.getPosition().scale(1, EYE_LEVEL, 1));
   }
 
   @Override
   public void setPosition(double x, double y) {
     super.setPosition(x, y);
-    this.viewPort.setPosition(this.renderedBody.getPosition().add(0, 8*Tile.UNIT_SCALE_DOWN, 0));
+    this.viewPort.setPosition(this.renderedBody.getPosition().scale(1, EYE_LEVEL, 1));
   }
 
   public void drawReticle(Graphics2D g) {
@@ -123,8 +125,8 @@ public class Player extends Unit {
 
   public String toString() {
     return this.getClass().getSimpleName()+
-    " "+ renderedBody.getPosition().x*Tile.UNIT_SCALE_UP+
-    " "+-renderedBody.getPosition().z*Tile.UNIT_SCALE_UP+
+    " "+ renderedBody.getPosition().x*Tile.SCALE_M_TO_U+
+    " "+-renderedBody.getPosition().z*Tile.SCALE_M_TO_U+
     " "+velocity.x+
     " "+velocity.y+
     " "+lookDirection.x+

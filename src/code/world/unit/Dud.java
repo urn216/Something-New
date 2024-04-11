@@ -18,7 +18,7 @@ public class Dud extends Unit {
   public Dud(Scene scene, Item item, Vector2 position, Vector2 velocity) {
     super(
       scene,                            //scene
-      8,                                //size
+      13,                               //size
       position,                         //pos
       velocity,
       new Vector2(),                    //dir

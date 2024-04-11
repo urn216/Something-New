@@ -24,14 +24,14 @@ public class TestAI extends Unit {
   public TestAI(Scene scene, Item item, Vector2 position, Vector2 velocity) {
     super(
       scene,                            //scene
-      8,                                //size
+      13,                               //size
       Color.getHSBColor((float)Math.random(), 1f, 0.5f),
       position,                         //pos
       velocity,
       new Vector2(),                    //dir
-      3000/Core.TICKS_PER_SECOND,       //walk-force
-      140/Core.TICKS_PER_SECOND,        //max-velocity
-      100,                              //mass
+      6000/Core.TICKS_PER_SECOND,       //walk-force
+      280/Core.TICKS_PER_SECOND,        //max-velocity
+      150,                              //mass
       160,                              //hitpoints
       0                                 //elasticity
     );

@@ -24,7 +24,7 @@ public class ItemUnit extends Unit {
   public ItemUnit(Scene scene, Item item, Vector2 position, Vector2 velocity) {
     super(
       scene,                            //scene
-      3,                                //size
+      6,                                //size
       position,                         //pos
       velocity,
       new Vector2(),                    //dir

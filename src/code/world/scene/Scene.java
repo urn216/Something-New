@@ -9,6 +9,7 @@ import mki.math.vector.Vector3I;
 import mki.world.Camera3D;
 import mki.world.Material;
 import mki.world.RigidBody;
+import mki.world.object.primitive.Cube;
 import mki.world.object.primitive.Face;
 import code.core.Core;
 import code.world.Bullet;
@@ -54,7 +55,7 @@ public class Scene {
   protected final Collection<Decal> bgDecals;
   protected final Collection<Decal> fgDecals;
 
-  protected final Camera cam = new Camera(new Vector2(32, 32), new Vector2(), 2);
+  protected final Camera cam = new Camera(new Vector2(32, 32), new Vector2(), 1.5);
 
   protected boolean drawInterior = true;
 
@@ -89,21 +90,34 @@ public class Scene {
   }
 
   public static final void generateFloor(int mapSX, int mapSY) {
+    Material mat = new Material(new Vector3I(100), 0f, new Vector3());
     //FLOOR
     new Face(
       new Vector3(), 
-      mapSX*Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN, 
-      mapSY*Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN, 
-      new Material(new Vector3I(100), 0f, new Vector3())
+      mapSX*Tile.TILE_SIZE_U*Tile.SCALE_U_TO_M, 
+      mapSY*Tile.TILE_SIZE_U*Tile.SCALE_U_TO_M, 
+      mat
     ).setPitch(90);
 
     //CEILING
     new Face(
-      new Vector3(0, Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN/2, 0), 
-      mapSX*Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN, 
-      mapSY*Tile.TILE_SIZE*Tile.UNIT_SCALE_DOWN, 
-      new Material(new Vector3I(100), 0f, new Vector3())
+      new Vector3(0, Wall.WALL_HEIGHT_M, 0), 
+      mapSX*Tile.TILE_SIZE_U*Tile.SCALE_U_TO_M, 
+      mapSY*Tile.TILE_SIZE_U*Tile.SCALE_U_TO_M, 
+      mat
     ).setPitch(-90);
+
+    new Cube(new Vector3(0.5-3, 0.5, 3-0.5), Tile.MINI_TILE_SIZE*Tile.SCALE_U_TO_M, mat);
+    new Cube(new Vector3(1.5-6, 0.5, 3-0.5), Tile.MINI_TILE_SIZE*Tile.SCALE_U_TO_M, mat);
+    new Cube(new Vector3(2.5-6, 0.5, 3-0.5), Tile.MINI_TILE_SIZE*Tile.SCALE_U_TO_M, mat);
+
+    new Cube(new Vector3(0.5-6, 0.5, 3-1.5), Tile.MINI_TILE_SIZE*Tile.SCALE_U_TO_M, mat);
+    new Cube(new Vector3(1.5-6, 0.5, 3-1.5), Tile.MINI_TILE_SIZE*Tile.SCALE_U_TO_M, mat);
+    new Cube(new Vector3(2.5-6, 0.5, 3-1.5), Tile.MINI_TILE_SIZE*Tile.SCALE_U_TO_M, mat);
+
+    new Cube(new Vector3(0.5-6, 0.5, 3-2.5), Tile.MINI_TILE_SIZE*Tile.SCALE_U_TO_M, mat);
+    new Cube(new Vector3(1.5-6, 0.5, 3-2.5), Tile.MINI_TILE_SIZE*Tile.SCALE_U_TO_M, mat);
+    new Cube(new Vector3(2.5-6, 0.5, 3-2.5), Tile.MINI_TILE_SIZE*Tile.SCALE_U_TO_M, mat);
   }
   
   public String getSceneName() {
@@ -115,7 +129,7 @@ public class Scene {
     return this.sceneName.equals(other);
   }
   
-  public Unit getPlayer() {
+  public Player getPlayer() {
     return player;
   }
 
@@ -140,19 +154,19 @@ public class Scene {
   }
   
   public Tile getTile(Vector2 p) {
-    int x = MathHelp.clamp((int)(p.x/Tile.TILE_SIZE+mapSX/2), 0, mapSX-1);
-    int y = MathHelp.clamp((int)(p.y/Tile.TILE_SIZE+mapSY/2), 0, mapSY-1);
+    int x = MathHelp.clamp((int)(p.x/Tile.TILE_SIZE_U+mapSX/2), 0, mapSX-1);
+    int y = MathHelp.clamp((int)(p.y/Tile.TILE_SIZE_U+mapSY/2), 0, mapSY-1);
     return map[x][y];
   }
   
   public void addBullet(Bullet b) {
     bullets.add(b);
-    getTile(b.getPosition()).passOff(b);
+    getTile(b.getPosition()).add(b);
   }
   
   public void addUnit(Unit u) {
     units.add(u);
-    getTile(u.getPosition()).passOff(u);
+    getTile(u.getPosition()).add(u);
   }
 
   public void removeUnit(Unit u) {
@@ -167,10 +181,19 @@ public class Scene {
 
   public void bigUpdate() {
     onEachTile(0, mapSX, 0, mapSY, (i, j) -> {
-      map[j][i].bigUpdate(units, fixedObj);
+      map[j][i].clearAll();
       map[j][i].getNeighbours(map, j, i, mapSX, mapSY);
     });
-    this.shadowMap = (Light.createShadowMap(fixedObj, map, mapSX*Tile.TILE_SIZE, mapSY*Tile.TILE_SIZE));
+    for (Unit u : units) {
+      getTile(u.getPosition()).add(u);
+    }
+    for (Bullet b : bullets) {
+      getTile(b.getPosition()).add(b);
+    }
+    for (WorldObject o : fixedObj) {
+      getTile(o.getPosition()).addObject(o); //need to fix this. Allow for placement over multiple tiles
+    }
+    this.shadowMap = (Light.createShadowMap(fixedObj, map, mapSX*Tile.TILE_SIZE_U, mapSY*Tile.TILE_SIZE_U));
   }
   
   public void update(boolean[] keys, boolean[] mouse, Vector2 mousePos, Vector2 mouseOff) {
@@ -201,11 +224,11 @@ public class Scene {
       d.draw(g);
     }
     double halfW = Core.WINDOW.screenWidth()/(2*cam.getZoom());
-    int left = Math.max((int)((cam.getPos().x-halfW)/Tile.TILE_SIZE + mapSX/2), 0);
-    int right = Math.min((int)((cam.getPos().x+halfW)/Tile.TILE_SIZE + mapSX/2)+1, mapSX);
+    int left = Math.max((int)((cam.getPos().x-halfW)/Tile.TILE_SIZE_U + mapSX/2), 0);
+    int right = Math.min((int)((cam.getPos().x+halfW)/Tile.TILE_SIZE_U + mapSX/2)+1, mapSX);
     double halfH = Core.WINDOW.screenHeight()/(2*cam.getZoom());
-    int top = Math.max((int)((cam.getPos().y-halfH)/Tile.TILE_SIZE + mapSY/2), 0);
-    int bottom = Math.min((int)((cam.getPos().y+halfH)/Tile.TILE_SIZE + mapSY/2)+1, mapSY);
+    int top = Math.max((int)((cam.getPos().y-halfH)/Tile.TILE_SIZE_U + mapSY/2), 0);
+    int bottom = Math.min((int)((cam.getPos().y+halfH)/Tile.TILE_SIZE_U + mapSY/2)+1, mapSY);
     
     if (drawInterior) {
       onEachTile(left, right, top, bottom, (i, j) -> map[i][j].draw(g, cam));
@@ -353,8 +376,8 @@ public class Scene {
       if (type.equals("Player")) {
         scene.player = new Player(
           scene,
-          // new Gun(1200, 1, 1000, 100, 20, 0.96, true, new Gun(1200, 10, 150, 500, 16, 0.8, false)),
-          new Gun(1200, 1, 1000, 100, 20, 0.96, true, new GunLauncher((p, v) -> new ItemUnit(p.getScene(), null, p.getPosition(), p.getVelocity().add(v)), 1200, 1, 500, 0.96, true)),
+          // new Gun(1800, 1, 1000, 100, 20, 0.96, true, new Gun(1800, 10, 150, 500, 16, 0.8, false)),
+          new Gun(1800, 1, 1000, 100, 20, 0.96, true, new GunLauncher((p, v) -> new ItemUnit(p.getScene(), null, p.getPosition(), p.getVelocity().add(v)), 1200, 1, 500, 0.96, true)),
           new Vector2(scan.nextDouble(), scan.nextDouble()), 
           new Vector2(scan.nextDouble(), scan.nextDouble()), 
           scan.nextDouble(), 
@@ -365,7 +388,7 @@ public class Scene {
         scene.units.add(scene.player);
       }
       else if (type.equals("Dud")) {scene.units.add(new Dud(scene, null, new Vector2(scan.nextDouble(), scan.nextDouble()), new Vector2(scan.nextDouble(), scan.nextDouble())));}
-      else if (type.equals("TestAI")) {scene.units.add(new TestAI(scene, new Gun(1200, 1, 1000, 160, 30, 0.96, true), new Vector2(scan.nextDouble(), scan.nextDouble()), new Vector2(scan.nextDouble(), scan.nextDouble())));}
+      else if (type.equals("TestAI")) {scene.units.add(new TestAI(scene, new Gun(500, 1, 1000, 160, 30, 0.96, true), new Vector2(scan.nextDouble(), scan.nextDouble()), new Vector2(scan.nextDouble(), scan.nextDouble())));}
       scan.close();
     }
 

@@ -117,6 +117,7 @@ public abstract class Core {
 
   public static final void setRender3D(boolean render3d) {
     render3D = render3d;
+    if (render3d && currentScene != null && currentScene.getPlayer() != null) currentScene.getPlayerViewPort().draw();
   }
 
   public static long currentTicks() {

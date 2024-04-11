@@ -14,19 +14,20 @@ import code.world.unit.Unit;
 * @version (a version number or a date)
 */
 public interface RigidBody {
+  
   public Vector2 getPosition();
-
+  
   public Vector2 getVelocity();
-
+  
   public List<Collider> getColliders();
 
   public Scene getScene();
 
+  public mki.world.RigidBody getRenderedBody();
+
   public void setPosition(Vector2 pos);
 
-  public void takeDamage(double damage);
-
-  public mki.world.RigidBody getRenderedBody();
+  public void takeDamage(double damage, Vector2 location);
 
   public void use(Unit user);
 

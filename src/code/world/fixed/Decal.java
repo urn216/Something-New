@@ -46,7 +46,7 @@ public class Decal extends WorldObject {
     this.height = img.getHeight();
     this.origin = new Vector2(x-width/2, y-height/2);
 
-    this.renderedBody = new Face(new Vector3(position.x*Tile.UNIT_SCALE_DOWN, LAYER_BUFFER*stackSize++, -position.y*Tile.UNIT_SCALE_DOWN), width*Tile.UNIT_SCALE_DOWN, height*Tile.UNIT_SCALE_DOWN, new Material(new Vector3I(150), 0f, new Vector3(), file));
+    this.renderedBody = new Face(new Vector3(position.x*Tile.SCALE_U_TO_M, LAYER_BUFFER*stackSize++, -position.y*Tile.SCALE_U_TO_M), width*Tile.SCALE_U_TO_M, height*Tile.SCALE_U_TO_M, new Material(new Vector3I(150), 0f, new Vector3(), file));
     this.renderedBody.setPitch(90);
     RigidBody.removeBody(renderedBody);
   }
@@ -63,9 +63,14 @@ public class Decal extends WorldObject {
     this.height = img.getHeight();
     this.origin = new Vector2(x-width/2, y-height/2);
 
-    this.renderedBody = new Face(new Vector3(position.x*Tile.UNIT_SCALE_DOWN, LAYER_BUFFER*stackSize++, -position.y*Tile.UNIT_SCALE_DOWN), width*Tile.UNIT_SCALE_DOWN, height*Tile.UNIT_SCALE_DOWN, new Material(new Vector3I(150), 0f, new Vector3(0)));
+    this.renderedBody = new Face(new Vector3(position.x*Tile.SCALE_U_TO_M, LAYER_BUFFER*stackSize++, -position.y*Tile.SCALE_U_TO_M), width*Tile.SCALE_U_TO_M, height*Tile.SCALE_U_TO_M, new Material(new Vector3I(150), 0f, new Vector3(0)));
     this.renderedBody.setPitch(90);
     RigidBody.removeBody(renderedBody);
+  }
+
+  @Override
+  public int getShape() {
+    return 1<<4;
   }
 
   @Override
@@ -93,6 +98,6 @@ public class Decal extends WorldObject {
 
   public String toString() {
     if (type == null) return "";
-    return type+" "+(int)renderedBody.getPosition().x*Tile.UNIT_SCALE_UP+" "+(int)-renderedBody.getPosition().z*Tile.UNIT_SCALE_UP+" "+directory+" "+camPan;
+    return type+" "+(int)renderedBody.getPosition().x*Tile.SCALE_M_TO_U+" "+(int)-renderedBody.getPosition().z*Tile.SCALE_M_TO_U+" "+directory+" "+camPan;
   }
 }
