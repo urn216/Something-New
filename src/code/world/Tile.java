@@ -4,7 +4,7 @@ import mki.math.vector.Vector2;
 import mki.math.MathHelp;
 // import code.world.fixed.Light;
 import code.world.fixed.WorldObject;
-
+import code.world.scene.Scene;
 import code.world.unit.Unit;
 
 import java.util.*;
@@ -37,6 +37,8 @@ public class Tile {
   public static final int OFFSET_CEILING = OFFSET_BORDER+OBJECTS_BORDER;
 
   private static final int HAS_FLOOR_BIT = 1 << (OFFSET_CEILING + OBJECTS_CEILING);
+
+  private final Scene scene;
   
   private final WorldObject[] fixedObjects = new WorldObject[OBJECTS_FLOOR + OBJECTS_BORDER + OBJECTS_CEILING];
   private int occupiedSpace;
@@ -44,7 +46,7 @@ public class Tile {
   private List<Unit> units = new ArrayList<Unit>();
   private List<Bullet> bullets = new ArrayList<Bullet>();
 
-  private final int x, y;
+  public final int x, y;
 
 
 
@@ -57,7 +59,8 @@ public class Tile {
   /**
   * Constructor for Tiles
   */
-  public Tile(int x, int y, int active) {
+  public Tile(Scene scene, int x, int y, int active) {
+    this.scene = scene;
     this.x = x;
     this.y = y;
     this.occupiedSpace = active != 0 ? HAS_FLOOR_BIT : 0;
@@ -92,13 +95,25 @@ public class Tile {
 
   public List<Unit> getUnits() {return units;}
 
-  public void add(Unit u) {units.add(u);}
+  public Scene getScene() {
+    return scene;
+  }
+
+  public void add(Unit u) {
+    units.add(u);
+  }
   
-  public void remove(Unit u) {units.remove(u);}
+  public void remove(Unit u) {
+    units.remove(u);
+  }
 
-  public void add(Bullet b) {bullets.add(b);}
+  public void add(Bullet b) {
+    bullets.add(b);
+  }
 
-  public void remove(Bullet b) {bullets.remove(b);}
+  public void remove(Bullet b) {
+    bullets.remove(b);
+  }
 
   public boolean addObject(WorldObject o) {
     int shape = o.getShape();
@@ -131,7 +146,7 @@ public class Tile {
     }
   }
 
-  public List<WorldObject> getNBOs() {
+  public List<WorldObject> getNBOs() {//TODO remove this?
     List<WorldObject> objs = new ArrayList<WorldObject>();
     for (int i = 0; i<3; i++) {
       for (int j = 0; j<3; j++) {
@@ -208,7 +223,7 @@ public class Tile {
 
   public void drawLowerObjects(Graphics2D g) {
     for (int i = 0; i < OBJECTS_FLOOR; i++) {
-      if (fixedObjects[i] != null) fixedObjects[i].draw(g);
+      if (fixedObjects[i] != null) fixedObjects[i].draw2D(g);
     }
   }
 
@@ -226,7 +241,7 @@ public class Tile {
 
   public void drawHigherObjects(Graphics2D g) {
     for (int i = OFFSET_BORDER; i < fixedObjects.length; i++) {
-      if (fixedObjects[i] != null) fixedObjects[i].draw(g);
+      if (fixedObjects[i] != null) fixedObjects[i].draw2D(g);
     }
   }
 }

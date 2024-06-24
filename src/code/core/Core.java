@@ -38,6 +38,9 @@ public abstract class Core {
   
   public static final String BLACKLISTED_CHARS = "/\\.?!*\n";
 
+  public static final int FULL_BRIGHT = ~0;
+  public static final int SOME_DIM = (255<<24) | (150<<16) | (150<<8) | (150);
+
   private static boolean quit = false;
 
   private static Scene currentScene;
@@ -297,7 +300,7 @@ public abstract class Core {
 
     switch (state) {
       case SPLASH:
-      SPLASH.draw(g);
+      SPLASH.draw2D(g);
       break;
       case MAINMENU:
       case TRANSITION:

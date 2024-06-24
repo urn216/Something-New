@@ -25,7 +25,7 @@ public class Settings {
     {"s_subtitles"    , false, null, false, new UIActionSetter<Boolean>() {public void set(Boolean b) {}}},
     {"v_fullScreen"   , true , null, true , new UIActionSetter<Boolean>() {public void set(Boolean b) {Core.WINDOW.setFullscreen           (b);}}},
     {"v_3Drendering"  , false, null, false, new UIActionSetter<Boolean>() {public void set(Boolean b) {Core       .setRender3D             (b);}}},
-    {"v_fancylighting", true , null, true , new UIActionSetter<Boolean>() {public void set(Boolean b) {Constants  .setDynamicRasterLighting(b);}}},
+    {"v_fancylighting", true , null, true , new UIActionSetter<Boolean>() {public void set(Boolean b) {Constants  .setDynamicRasterLighting(b); Core.setRender3D(Core.isRender3D());}}},
   };
 
   private final String fileName;

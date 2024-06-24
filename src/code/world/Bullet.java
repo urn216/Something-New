@@ -2,7 +2,6 @@ package code.world;
 
 import mki.math.vector.Vector2;
 import mki.math.vector.Vector3;
-import mki.math.vector.Vector3I;
 import mki.world.Material;
 import mki.world.object.primitive.Cube;
 
@@ -14,6 +13,8 @@ import java.awt.Color;
 * Collider class
 */
 public class Bullet {
+  private static final Material BULLET_GLOW = new Material((255<<24)|(200<<16), 0f, new Vector3(2, 0, 0));
+
   private Vector2 position;
   private Vector2 prevPos;
   private Vector2 velocity;
@@ -37,8 +38,8 @@ public class Bullet {
     this.damage = damage;
     renderedBullet = new Cube(
       new Vector3(this.position.x*Tile.SCALE_U_TO_M, parent.getRenderedBody().getPosition().y*1.5, -this.position.y*Tile.SCALE_U_TO_M), 
-      Tile.SCALE_U_TO_M, 
-      new Material(new Vector3I(200, 0, 0), 0f, new Vector3(1, 0, 0))
+      0.05, 
+      BULLET_GLOW
     );
   }
 

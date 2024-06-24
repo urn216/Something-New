@@ -1,6 +1,7 @@
 package code.world.unit;
 
 import mki.math.vector.Vector2;
+import mki.world.Material;
 import code.core.Core;
 import code.world.Collider;
 import code.world.RigidBody;
@@ -37,17 +38,17 @@ public class ItemUnit extends Unit {
 
     this.collider.setToTriggerVolume(null, null);
     this.held = item;
+    this.renderedBody.getModel().setMat(new Material(Core.FULL_BRIGHT)); //0f , new Vector3(1, 10, 1)
   }
 
   @Override
-  public void step(List<Collider> colliders) {
+  public boolean step(List<Collider> colliders) {
     Vector2 slowAcc = velocity.scale(m/500);
     velocity = velocity.subtract(slowAcc);
 
     colliders = colliders.stream().filter((c) -> (c.getParent() instanceof WorldObject)).toList();
 
-    stepX(colliders);
-    stepY(colliders);
+    return !(!stepX(colliders) && !stepY(colliders));
   }
 
   @Override

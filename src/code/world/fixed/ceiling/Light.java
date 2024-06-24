@@ -1,14 +1,18 @@
-package code.world.fixed;
+package code.world.fixed.ceiling;
 
 import code.world.Ray;
 import mki.math.vector.Vector2;
 import mki.math.vector.Vector3;
-import mki.math.vector.Vector3I;
+import code.core.Core;
+import code.world.Camera;
 import code.world.Collider;
 import code.world.Tile;
 import mki.world.Material;
 import mki.world.object.primitive.Cube;
 import code.world.Collider.Round;
+import code.world.fixed.CeilingObject;
+import code.world.fixed.Decal;
+import code.world.fixed.WorldObject;
 import code.world.fixed.dividers.Wall;
 import code.world.scene.Scene;
 
@@ -24,7 +28,7 @@ import java.awt.Color;
 /**
 * Lights and stuff
 */
-public class Light extends WorldObject {
+public class Light extends CeilingObject {
   public static final double RANGE = Tile.TILE_SIZE_U*3;
   
   private static final float[] fs = {0f, 1f};
@@ -37,16 +41,15 @@ public class Light extends WorldObject {
   /**
   * Constructor for Light objects
   */
-  public Light(double x, double y, boolean functioning, Scene scene) {
-    this.scene = scene;
-    this.origin = new Vector2(x*Tile.TILE_SIZE_U, y*Tile.TILE_SIZE_U);
+  public Light(Tile tile, boolean functioning) {
+    super(tile);
     // Vector2 position = origin.add(Tile.TILE_SIZE/2);
     this.width = 12;
 
     this.renderedBody = new Cube(
-      new Vector3((x+0.5)*Tile.TILE_SIZE_M, Wall.WALL_HEIGHT_M-4*Tile.SCALE_U_TO_M, -(y+0.5)*Tile.TILE_SIZE_M), 
+      new Vector3((tile.x+0.5)*Tile.TILE_SIZE_M, Wall.DIVIDER_HEIGHT_M-4*Tile.SCALE_U_TO_M, -(tile.y+0.5)*Tile.TILE_SIZE_M), 
       this.width*Tile.SCALE_U_TO_M, 
-      new Material(new Vector3I(150), 0f, new Vector3(functioning ? Tile.TILE_SIZE_U : 0))
+      new Material(Core.SOME_DIM, 0f, new Vector3(functioning ? Tile.TILE_SIZE_U : 0))
     );
     // colliders.add(new Collider.Round(new Vector2(), 5, Collider.FLAG_EMPTY, this));
 
@@ -86,8 +89,8 @@ public class Light extends WorldObject {
       if (ray.hasHit()) this.rays.add(ray);
     }
 
-    int conX = scene.getMapSX()/2*Tile.TILE_SIZE_U;
-    int conY = scene.getMapSY()/2*Tile.TILE_SIZE_U;
+    int conX = getScene().getMapSX()/2*Tile.TILE_SIZE_U;
+    int conY = getScene().getMapSY()/2*Tile.TILE_SIZE_U;
 
     g.setPaint(new java.awt.RadialGradientPaint((float)(position.x+conX), (float)(position.y+conY), (float)(RANGE), fs, cs));
     // for (int i = 0; i < this.rays.size(); i++) { //WINDING IS VERY WRONG
@@ -105,15 +108,12 @@ public class Light extends WorldObject {
   }
 
   @Override
-  public int getShape() {
-    return 1<<Tile.OFFSET_CEILING;
-  }
-
-  public void draw(Graphics2D g) {
-    double z = scene.getCam().getZoom();
-    double conX = scene.getCam().conX();
-    double conY = scene.getCam().conY();
-    g.setColor(this.functioning ? Color.gray : Wall.WALL_COLOUR);
+  public void draw2D(Graphics2D g) {
+    Camera cam = getScene().getCam();
+    double z = cam.getZoom();
+    double conX = cam.conX();
+    double conY = cam.conY();
+    g.setColor(this.functioning ? Color.gray : Wall.DIVIDER_COLOUR);
     g.fill(new Ellipse2D.Double((renderedBody.getPosition().x*Tile.SCALE_M_TO_U-width/2)*z-conX, (-renderedBody.getPosition().z*Tile.SCALE_M_TO_U-width/2)*z-conY, width*z, width*z));
     
     // g.setColor(Color.blue);
@@ -124,7 +124,7 @@ public class Light extends WorldObject {
   }
 
   public String toString() {
-    return this.getClass().getSimpleName()+" "+(int)(origin.x/Tile.TILE_SIZE_U)+" "+(int)(origin.y/Tile.TILE_SIZE_U)+" "+functioning;
+    return this.getClass().getSimpleName()+" "+tile.x+" "+tile.y+" "+functioning;
   }
 
   public static Decal createShadowMap(Collection<WorldObject> fixedObj, Tile[][] map, int width, int height) {

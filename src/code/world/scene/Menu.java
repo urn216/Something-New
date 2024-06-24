@@ -26,7 +26,7 @@ public class Menu extends Scene {
   @Override
   public void draw(Graphics2D g) {
     for (Decal d : bgDecals) {
-      d.draw(g);
+      d.draw2D(g);
     }
   }
 }

@@ -3,7 +3,6 @@ package code.world.unit;
 import mki.math.MathHelp;
 import mki.math.vector.Vector2;
 import mki.math.vector.Vector3;
-import mki.math.vector.Vector3I;
 import mki.world.Material;
 import mki.world.object.primitive.Quad;
 import code.world.Collider;
@@ -79,7 +78,7 @@ public abstract class Unit implements RigidBody {
       radius*5.6*Tile.SCALE_U_TO_M, 
       radius*2*Tile.SCALE_U_TO_M, 
       1,
-      new Material(new Vector3I(colour.getRed(), colour.getGreen(), colour.getBlue()), 0f, new Vector3())
+      new Material(colour)
     );
 
     this.lookDirection = new Vector2(MathHelp.clamp(lookDirection.x, -90, 90), (lookDirection.y+360)%360);
@@ -101,6 +100,10 @@ public abstract class Unit implements RigidBody {
   @Override
   public Vector2 getVelocity() {
     return velocity;
+  }
+
+  public Item getHeldItem() {
+    return held;
   }
 
   public double getHitPoints() {
@@ -206,13 +209,15 @@ public abstract class Unit implements RigidBody {
     step(colliders);
   }
 
-  public void step(List<Collider> colliders) {
+  public boolean step(List<Collider> colliders) {
     Vector2 inputAcc = movementDirection.scale(walkF/m);
     Vector2 slowAcc = velocity.scale(walkF/(vMax*m)).add(velocity.scale(m/1000));
     acceleration = inputAcc.subtract(slowAcc).add(addAcc);
     velocity = velocity.add(acceleration);
 
     addAcc = new Vector2();
+
+    boolean collided = false;
 
     // if non-solid
     if (!collider.isSolid()) {
@@ -221,29 +226,35 @@ public abstract class Unit implements RigidBody {
 
     // if solid
     else {
-      stepX(colliders);
-      stepY(colliders);
+      if (stepX(colliders)) collided = true;
+      if (stepY(colliders)) collided = true;
     }
+
+    return collided;
   }
 
-  protected void stepX(List<Collider> colliders) {
+  protected boolean stepX(List<Collider> colliders) {
     offsetPosition(velocity.x, 0);
     Collider collided = collision(colliders, true);
     if (collided != null) {
       setPosition(collided.getPos().x-collider.snapTo(collided, true)*Math.signum(velocity.x), -renderedBody.getPosition().z*Tile.SCALE_M_TO_U);
       Vector2 dir = new Vector2(collided.getClosest().subtract(collider.getPos()).unitize());
       velocity = velocity.subtract(dir.scale(dir.dot(velocity)*(1+elasticity)));
+      return true;
     }
+    return false;
   }
 
-  protected void stepY(List<Collider> colliders) {
+  protected boolean stepY(List<Collider> colliders) {
     offsetPosition(0, velocity.y);
     Collider collided = collision(colliders, false);
     if (collided != null) {
       setPosition(renderedBody.getPosition().x*Tile.SCALE_M_TO_U, collided.getPos().y-collider.snapTo(collided, false)*Math.signum(velocity.y));
       Vector2 dir = new Vector2(collided.getClosest().subtract(collider.getPos()).unitize());
       velocity = velocity.subtract(dir.scale(dir.dot(velocity)*(1+elasticity)));
+      return true;
     }
+    return false;
   }
 
   public void undone() {

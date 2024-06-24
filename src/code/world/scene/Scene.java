@@ -5,7 +5,6 @@ import mki.io.FileIO;
 import mki.math.MathHelp;
 import mki.math.vector.Vector2;
 import mki.math.vector.Vector3;
-import mki.math.vector.Vector3I;
 import mki.world.Camera3D;
 import mki.world.Material;
 import mki.world.RigidBody;
@@ -19,12 +18,11 @@ import code.world.Tile;
 import code.world.fixed.Decal;
 import code.world.fixed.Direction;
 import code.world.fixed.dividers.Door;
-import code.world.fixed.Light;
 import code.world.fixed.dividers.Wall;
 import code.world.inv.Gun;
 import code.world.inv.GunLauncher;
 import code.world.fixed.WorldObject;
-
+import code.world.fixed.ceiling.Light;
 import code.world.unit.Dud;
 import code.world.unit.ItemUnit;
 import code.world.unit.Player;
@@ -90,7 +88,7 @@ public class Scene {
   }
 
   public static final void generateFloor(int mapSX, int mapSY) {
-    Material mat = new Material(new Vector3I(100), 0f, new Vector3());
+    Material mat = new Material(Core.FULL_BRIGHT);
     //FLOOR
     new Face(
       new Vector3(), 
@@ -101,7 +99,7 @@ public class Scene {
 
     //CEILING
     new Face(
-      new Vector3(0, Wall.WALL_HEIGHT_M, 0), 
+      new Vector3(0, Wall.DIVIDER_HEIGHT_M, 0), 
       mapSX*Tile.TILE_SIZE_U*Tile.SCALE_U_TO_M, 
       mapSY*Tile.TILE_SIZE_U*Tile.SCALE_U_TO_M, 
       mat
@@ -157,6 +155,10 @@ public class Scene {
     int x = MathHelp.clamp((int)(p.x/Tile.TILE_SIZE_U+mapSX/2), 0, mapSX-1);
     int y = MathHelp.clamp((int)(p.y/Tile.TILE_SIZE_U+mapSY/2), 0, mapSY-1);
     return map[x][y];
+  }
+
+  public Tile getTile(int x, int y) {
+    return map[x+mapSX/2][y+mapSY/2];
   }
   
   public void addBullet(Bullet b) {
@@ -221,7 +223,7 @@ public class Scene {
   
   public void draw(Graphics2D g) {
     for (Decal d : bgDecals) {
-      d.draw(g);
+      d.draw2D(g);
     }
     double halfW = Core.WINDOW.screenWidth()/(2*cam.getZoom());
     int left = Math.max((int)((cam.getPos().x-halfW)/Tile.TILE_SIZE_U + mapSX/2), 0);
@@ -235,13 +237,13 @@ public class Scene {
       onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawLowerObjects(g));
       onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawUnits(g));
 
-      if (shadowMap != null) shadowMap.draw(g);
+      if (shadowMap != null) shadowMap.draw2D(g);
       
       onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawBullets(g));
       onEachTile(left, right, top, bottom, (i, j) -> map[i][j].drawHigherObjects(g));
 
       for (Decal d : fgDecals) {
-        d.draw(g);
+        d.draw2D(g);
       }
 
       player.drawReticle(g);
@@ -300,33 +302,24 @@ public class Scene {
     if (!FileIO.exists(directory)) return null;
     
     List<String> allLines = FileIO.readAllLines(directory+"/Tiles.txt", fromJar);
-    int mapSX = 0;
+    int mapSX = allLines.get(0).split(" ").length;
     int mapSY = allLines.size();
-    Scanner tScan = new Scanner(allLines.get(0));
-    while (tScan.hasNext()) {
-      tScan.next();
-      mapSX++;
-    }
-    tScan.close();
     Tile[][] map = new Tile[mapSX][mapSY];
+    
+    Scene result = new Scene(map, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
+
     for (int y = 0; y < mapSY; y++) {
       Scanner scan = new Scanner(allLines.get(y));
       for (int x = 0; x < mapSX; x++) {
-        map[x][y] = new Tile((int) (x-mapSX/2), (int) (y-mapSY/2), scan.nextInt());
+        map[x][y] = new Tile(result, (x-mapSX/2), (y-mapSY/2), scan.nextInt());
       }
       scan.close();
     }
-
-    Scene result = new Scene(map, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>());
     
     for (String line : FileIO.readAllLines(directory+"/BGDecals.txt", fromJar)) {
       Scanner scan = new Scanner(line);
-      String type;
       if (scan.hasNext()) {
-        type = scan.next();
-      }
-      else {type = "gap";}
-      if (!type.equals("gap")) {
+        String type = scan.next();
         result.bgDecals.add(new Decal(scan.nextDouble(), scan.nextDouble(), type+"/"+scan.next(), scan.nextBoolean(), result));
       }
       scan.close();
@@ -334,12 +327,8 @@ public class Scene {
 
     for (String line : FileIO.readAllLines(directory+"/FGDecals.txt", fromJar)) {
       Scanner scan = new Scanner(line);
-      String type;
       if (scan.hasNext()) {
-        type = scan.next();
-      }
-      else {type = "gap";}
-      if (!type.equals("gap")) {
+        String type = scan.next();
         result.fgDecals.add(new Decal(scan.nextDouble(), scan.nextDouble(), type+"/"+scan.next(), scan.nextBoolean(), result));
       }
       scan.close();
@@ -355,40 +344,56 @@ public class Scene {
 
     for (String line : FileIO.readAllLines(directory+"/Fixed.txt", fromJar)) {
       Scanner scan = new Scanner(line);
-      String type;
-      if (scan.hasNext()) {
-        type = scan.next();
+      if (scan.hasNext()) switch (scan.next()) {
+        case "Wall":
+          scene.fixedObj.add(new Wall (scene.getTile(scan.nextInt(), scan.nextInt()), Direction.valueOf(scan.next())));
+        break;
+        case "Door":
+          scene.fixedObj.add(new Door (scene.getTile(scan.nextInt(), scan.nextInt()), Direction.valueOf(scan.next())));
+        break;
+        case "Light":
+          scene.fixedObj.add(new Light(scene.getTile(scan.nextInt(), scan.nextInt()), scan.nextBoolean()));
+        break;
+        default:
       }
-      else {type = "gap";}
-      if (type.equals("Wall")) {scene.fixedObj.add(new Wall(scan.nextDouble(), scan.nextDouble(), Direction.valueOf(scan.next()), scene));}
-      else if (type.equals("Door")) {scene.fixedObj.add(new Door(scan.nextDouble(), scan.nextDouble(), Direction.valueOf(scan.next()), scene));}
-      else if (type.equals("Light")) {scene.fixedObj.add(new Light(scan.nextDouble(), scan.nextDouble(), scan.nextBoolean(), scene));}
       scan.close();
     }
     
     for (String line : FileIO.readAllLines(directory+"/Units.txt", fromJar)) {
       Scanner scan = new Scanner(line);
-      String type;
-      if (scan.hasNext()) {
-        type = scan.next();
+      if (scan.hasNext()) switch (scan.next()) {
+        case "Player":
+          scene.player = new Player(
+            scene,
+            // new Gun(1800, 1, 1000, 100, 20, 0.96, true, new Gun(1800, 10, 150, 500, 16, 0.8, false)),
+            new Gun(1800, 1, 1000, 100, 20, 0.96, true, new GunLauncher((p, v) -> new ItemUnit(p.getScene(), null, p.getPosition(), p.getVelocity().add(v)), 1200, 1, 500, 0.96, false)),
+            new Vector2(scan.nextDouble(), scan.nextDouble()), 
+            new Vector2(scan.nextDouble(), scan.nextDouble()), 
+            scan.nextDouble(), 
+            scan.nextDouble(), 
+            scan.nextDouble()
+          );
+          scene.cam.setTarU(scene.player);
+          scene.units.add(scene.player);
+        break;
+        case "Dud":
+          scene.units.add(new Dud(
+            scene, 
+            null, 
+            new Vector2(scan.nextDouble(), scan.nextDouble()), 
+            new Vector2(scan.nextDouble(), scan.nextDouble())
+          ));
+        break;
+        case "TestAI":
+          scene.units.add(new TestAI(
+            scene, 
+            new Gun(500, 1, 1000, 160, 30, 0.96, true), 
+            new Vector2(scan.nextDouble(), scan.nextDouble()), 
+            new Vector2(scan.nextDouble(), scan.nextDouble())
+          ));
+        break;
+        default:
       }
-      else {type = "gap";}
-      if (type.equals("Player")) {
-        scene.player = new Player(
-          scene,
-          // new Gun(1800, 1, 1000, 100, 20, 0.96, true, new Gun(1800, 10, 150, 500, 16, 0.8, false)),
-          new Gun(1800, 1, 1000, 100, 20, 0.96, true, new GunLauncher((p, v) -> new ItemUnit(p.getScene(), null, p.getPosition(), p.getVelocity().add(v)), 1200, 1, 500, 0.96, true)),
-          new Vector2(scan.nextDouble(), scan.nextDouble()), 
-          new Vector2(scan.nextDouble(), scan.nextDouble()), 
-          scan.nextDouble(), 
-          scan.nextDouble(), 
-          scan.nextDouble()
-        );
-        scene.cam.setTarU(scene.player);
-        scene.units.add(scene.player);
-      }
-      else if (type.equals("Dud")) {scene.units.add(new Dud(scene, null, new Vector2(scan.nextDouble(), scan.nextDouble()), new Vector2(scan.nextDouble(), scan.nextDouble())));}
-      else if (type.equals("TestAI")) {scene.units.add(new TestAI(scene, new Gun(500, 1, 1000, 160, 30, 0.96, true), new Vector2(scan.nextDouble(), scan.nextDouble()), new Vector2(scan.nextDouble(), scan.nextDouble())));}
       scan.close();
     }
 

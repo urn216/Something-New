@@ -17,7 +17,11 @@ import java.awt.Color;
 * @version (a version number or a date)
 */
 public class TestAI extends Unit {
+  private static final int burstLength = 2*(int)Core.TICKS_PER_SECOND;
+  private static final int burstCool = 1*(int)Core.TICKS_PER_SECOND;
+
   private int dirChange = (int) (Math.random()*60);
+  private int burstCounter = 0;
   /**
   * Constructor for objects of class TestAI
   */
@@ -43,17 +47,20 @@ public class TestAI extends Unit {
     dirChange --;
     if (dirChange <= 0) {
       dirChange = (int) (Math.random()*2*Core.TICKS_PER_SECOND);
-      setMovementDirection(Vector2.fromAngle((Math.random()*2-1)*Math.PI, 1));
+      setMovementDirection(Vector2.fromAngle((Math.random()*2-1)*Math.PI, (int)(Math.random()+0.7)));
     }
 
     Unit target = scene.getPlayer();
     Vector2 position = getPosition();
     Vector2 direction = getMovementDirection();
-    if (direction.dot(target.getPosition().subtract(position)) > 0) {
-      // held.primeUse(target.getPos().add(target.getVel()));
-      held.primeUse(this, position.add(direction));
+    if (direction.dot(target.getPosition().subtract(position).unitize()) > 0.8) {
+      if (burstCounter < burstLength) held.primeUse(this, target.getPosition().add(target.getVelocity()));
+      // held.primeUse(this, position.add(direction));
+      burstCounter++;
+
+      if (burstCounter >= burstCool+burstLength) burstCounter = 0;
     }
 
-    step(colliders);
+    if (step(colliders)) dirChange = 0;
   }
 }

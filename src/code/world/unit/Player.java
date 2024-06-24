@@ -102,6 +102,10 @@ public class Player extends Unit {
     return viewPort;
   }
 
+  public code.world.RigidBody getNextUsable() {
+    return triggering.isEmpty() ? null : triggering.get(triggering.size()-1);
+  }
+
   public void setLookDirection(double pitch, double yaw) {
     this.viewPort.setRotation(pitch, yaw, renderedBody.getRoll());
     this.lookDirection = new Vector2(viewPort.getPitch(), viewPort.getYaw());

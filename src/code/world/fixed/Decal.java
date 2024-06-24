@@ -3,7 +3,6 @@ package code.world.fixed;
 import mki.io.FileIO;
 import mki.math.vector.Vector2;
 import mki.math.vector.Vector3;
-import mki.math.vector.Vector3I;
 import mki.world.Material;
 import mki.world.RigidBody;
 import mki.world.object.primitive.Face;
@@ -22,6 +21,8 @@ import java.awt.image.BufferedImage;
 * @version (a version number or a date)
 */
 public class Decal extends WorldObject {
+  private final Scene scene;
+
   private boolean camPan;
   private BufferedImage img;
   private final String type;
@@ -30,10 +31,13 @@ public class Decal extends WorldObject {
   private static int stackSize = 0;
   private static final double LAYER_BUFFER = 0.1;
 
+  private Vector2 origin;
+
   /**
   * Constructor for Decal objects
   */
   public Decal(double x, double y, String file, boolean pan, Scene scene) {
+    super(null);
     this.scene = scene;
     Vector2 position = new Vector2(x, y);
     String[] parts = file.split("/");
@@ -46,12 +50,13 @@ public class Decal extends WorldObject {
     this.height = img.getHeight();
     this.origin = new Vector2(x-width/2, y-height/2);
 
-    this.renderedBody = new Face(new Vector3(position.x*Tile.SCALE_U_TO_M, LAYER_BUFFER*stackSize++, -position.y*Tile.SCALE_U_TO_M), width*Tile.SCALE_U_TO_M, height*Tile.SCALE_U_TO_M, new Material(new Vector3I(150), 0f, new Vector3(), file));
+    this.renderedBody = new Face(new Vector3(position.x*Tile.SCALE_U_TO_M, LAYER_BUFFER*stackSize++, -position.y*Tile.SCALE_U_TO_M), width*Tile.SCALE_U_TO_M, height*Tile.SCALE_U_TO_M, new Material(Core.SOME_DIM, 0f, new Vector3(), file));
     this.renderedBody.setPitch(90);
     RigidBody.removeBody(renderedBody);
   }
 
   public Decal(double x, double y, BufferedImage img, boolean pan, Scene scene) {
+    super(null);
     this.scene = scene;
     Vector2 position = new Vector2(x, y);
     this.type = null;
@@ -63,7 +68,7 @@ public class Decal extends WorldObject {
     this.height = img.getHeight();
     this.origin = new Vector2(x-width/2, y-height/2);
 
-    this.renderedBody = new Face(new Vector3(position.x*Tile.SCALE_U_TO_M, LAYER_BUFFER*stackSize++, -position.y*Tile.SCALE_U_TO_M), width*Tile.SCALE_U_TO_M, height*Tile.SCALE_U_TO_M, new Material(new Vector3I(150), 0f, new Vector3(0)));
+    this.renderedBody = new Face(new Vector3(position.x*Tile.SCALE_U_TO_M, LAYER_BUFFER*stackSize++, -position.y*Tile.SCALE_U_TO_M), width*Tile.SCALE_U_TO_M, height*Tile.SCALE_U_TO_M, new Material(Core.SOME_DIM));
     this.renderedBody.setPitch(90);
     RigidBody.removeBody(renderedBody);
   }
@@ -74,7 +79,7 @@ public class Decal extends WorldObject {
   }
 
   @Override
-  public void draw(Graphics2D g) {
+  public void draw2D(Graphics2D g) {
     if (camPan) {
       if(!scene.getCam().canSee(origin.x, origin.y, origin.x+width, origin.y+height)) return;
 

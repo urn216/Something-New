@@ -14,9 +14,11 @@ import mki.ui.control.UIPane;
 import mki.ui.control.UIState;
 
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
+
+import code.world.fixed.dividers.Door;
+import code.world.unit.ItemUnit;
 
 public class UICreator {
   // private static final UIElement VIRTUAL_KEYBOARD = new ElemKeyboard();
@@ -31,7 +33,7 @@ public class UICreator {
     UIPane mainMenu = new UIPane();
 
     UIElement title = new UIElement(
-    new Vector2(0   , 0),
+    new Vector2(0  , 0   ),
     new Vector2(0.3, 0.14),
     UIElement.TRANSITION_SLIDE_UP_LEFT
     ){
@@ -74,8 +76,7 @@ public class UICreator {
       0.1, 
       new UIToggle("Fullscreen",  Core.WINDOW::isFullScreen,              (b) -> Core.GLOBAL_SETTINGS.setBoolSetting("v_fullScreen"   , b)),
       new UIToggle("3D Mode"   ,         Core::isRender3D,                (b) -> Core.GLOBAL_SETTINGS.setBoolSetting("v_3Drendering"  , b)),
-      new UIToggle("Fancy 3D"  ,    Constants::usesDynamicRasterLighting, (b) -> Core.GLOBAL_SETTINGS.setBoolSetting("v_fancylighting", b)),
-      new UIButton("Test4", null)
+      new UIToggle("Fancy 3D"  ,    Constants::usesDynamicRasterLighting, (b) -> Core.GLOBAL_SETTINGS.setBoolSetting("v_fancylighting", b))
     );
 
     UIElement optaud = leftMenu(
@@ -128,26 +129,33 @@ public class UICreator {
     };
 
     UIElement health = new ElemListVert(
-      new Vector2(0, 0),
-      new Vector2(0.05, COMPON_HEIGHT+2*BUFFER_HEIGHT),
-      COMPON_HEIGHT,
-      BUFFER_HEIGHT,
+      new Vector2(0   , 0                            ),
+      new Vector2(0.06, COMPON_HEIGHT+4*BUFFER_HEIGHT),
+      COMPON_HEIGHT*2,
+      BUFFER_HEIGHT*2,
       new UIComponent[] {
-        new UIComponent() {
-
-          @Override
-          protected void draw(Graphics2D g, ColourSet c) {
-            Font font = new Font("Copperplate", Font.BOLD, (int) Math.round((height*0.6)));
-            FontMetrics metrics = g.getFontMetrics(font);
-            g.setFont(font);
-            g.setColor(c.text());
-
-            g.drawString(""+Core.getCurrentScene().getPlayer().getHitPoints(), x, y+((height - metrics.getHeight())/2) + metrics.getAscent());
-          }
-          
-        },
+        new UIText(() -> ""+(int)Core.getCurrentScene().getPlayer().getHitPoints(), 1.2, Font.BOLD),
       },
       UIElement.TRANSITION_SLIDE_UP_LEFT
+    );
+
+    UIElement use = new ElemListVert(
+      new Vector2(1  , 0.1                                ),
+      new Vector2(0.8, 0.1 + COMPON_HEIGHT+4*BUFFER_HEIGHT),
+      COMPON_HEIGHT*2,
+      BUFFER_HEIGHT*2,
+      new UIComponent[] {
+        new UIText(() -> {
+          code.world.RigidBody toUse = Core.getCurrentScene().getPlayer().getNextUsable();
+          return toUse == null ? "" : 
+          "Press E to " + (toUse instanceof ItemUnit u ? 
+          "take " + (u.getHeldItem() == null ? "" : u.getHeldItem().getClass().getSimpleName()) : toUse instanceof Door d ? d.isOpen() ? 
+          "close Door" : 
+          "open Door" : 
+          "use " + toUse.getClass().getSimpleName());
+        }, 0.6, Font.BOLD),
+      },
+      UIElement.TRANSITION_SLIDE_RIGHT
     );
 
     UIElement outPause = centreMenu(
@@ -193,6 +201,7 @@ public class UICreator {
     HUD.setModeBackAction(UIState.DEFAULT, ()->{UIController.retState(); Core.pause();});
 
     HUD.addState(UIState.DEFAULT, health  );
+    HUD.addState(UIState.DEFAULT, use     );
     HUD.addState(UIState.PAUSED , greyed   , UIState.DEFAULT , ()->{UIController.retState(); Core.pause();});
     HUD.addState(UIState.PAUSED , outPause);
     HUD.addState(UIState.OPTIONS, greyed   , UIState.PAUSED  , checkSettings);

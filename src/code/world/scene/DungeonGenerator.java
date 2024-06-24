@@ -5,22 +5,22 @@ import code.world.Tile;
 import code.world.fixed.dividers.Door;
 import code.world.fixed.Decal;
 import code.world.fixed.Direction;
-import code.world.fixed.Light;
 import code.world.fixed.dividers.Wall;
 import code.world.fixed.WorldObject;
-
+import code.world.fixed.ceiling.Light;
 import code.world.unit.Player;
 import code.world.unit.TestAI;
 import code.world.unit.Unit;
 
 import mki.math.vector.Vector2;
+import mki.world.RigidBody;
 
 import java.util.*;
 
 /**
 * class for generating a random map for playing the game
 */
-public class DungeonGenerator implements RandomGenerator {
+public class DungeonGenerator extends RandomGenerator {
 
   private static final byte[] WHICH_DIR = {1, 0, 0, 1, -1, 0, 0, -1};
 
@@ -64,7 +64,7 @@ public class DungeonGenerator implements RandomGenerator {
 
     for (int x = 0; x < this.width; x++) {
       for (int y = 0; y < this.height; y++) {
-        map[x][y] = new Tile((int) (x-this.width/2), (int) (y-this.height/2), 0);
+        map[x][y] = new Tile(result, (int) (x-this.width/2), (int) (y-this.height/2), 0);
       }
     }
 
@@ -83,17 +83,17 @@ public class DungeonGenerator implements RandomGenerator {
         if (Math.abs(i)+Math.abs(j)==4) {continue;}
         map[i+this.width/2][j+this.height/2].activate();
         if (Math.abs(j) == 2) {
-          fixedObj.add(new Wall(i, j==2?3:-2, Direction.North, result));
-          fixedObj.add(new Wall(j==2?3:-2, i, Direction.West, result));
+          fixedObj.add(new Wall(result.getTile(i, j==2?3:-2), Direction.North));
+          fixedObj.add(new Wall(result.getTile(j==2?3:-2, i), Direction.West));
           if (Math.abs(i) == 1) {
-            fixedObj.add(new Wall(i==1?2:-1, j, Direction.West, result));
-            fixedObj.add(new Wall(j, i==1?2:-1, Direction.North, result));
+            fixedObj.add(new Wall(result.getTile(i==1?2:-1, j), Direction.West));
+            fixedObj.add(new Wall(result.getTile(j, i==1?2:-1), Direction.North));
           }
         }
       }
     }
 
-    fixedObj.add(new Light(0, 0, (rand.nextFloat() > BROKEN_LIGHT_CHANCE), result));
+    fixedObj.add(new Light(result.getTile(0, 0), (rand.nextFloat() > BROKEN_LIGHT_CHANCE)));
 
     result.player = new Player(result, null, new Vector2(Tile.TILE_SIZE_U/2, Tile.TILE_SIZE_U/2), new Vector2(), 0, 0, 160);
     result.cam.setTarU(result.player);
@@ -131,25 +131,45 @@ public class DungeonGenerator implements RandomGenerator {
         map[cX][cY].activate();
         // chance for doors to be added
         if (rand.nextFloat() < TEST_AI_SPAWN_CHANCE) {units.add(new TestAI(result, null, new Vector2((cX-width/2)*Tile.TILE_SIZE_U+Tile.TILE_SIZE_U/2, (cY-height/2)*Tile.TILE_SIZE_U+Tile.TILE_SIZE_U/2), new Vector2()));}
-        if (i%LIGHT_SPACING==0 && j%LIGHT_SPACING==0) {fixedObj.add(new Light(cX-width/2, cY-height/2, (rand.nextFloat() > BROKEN_LIGHT_CHANCE), result));}
-        if (i == -(rWidth/2)) {if (!fixedObj.add(new Wall(cX-width/2, cY-height/2, Direction.West, result)) && connect) {fixedObj.remove(new Wall(cX-width/2, cY-height/2, Direction.West, result));}}
-        if (i == rWidth/2) {if (!fixedObj.add(new Wall(cX-width/2+1, cY-height/2, Direction.West, result)) && connect) {fixedObj.remove(new Wall(cX-width/2+1, cY-height/2, Direction.West, result));}}
-        if (j == -(rHeight/2)) {if (!fixedObj.add(new Wall(cX-width/2, cY-height/2, Direction.North, result)) && connect) {fixedObj.remove(new Wall(cX-width/2, cY-height/2, Direction.North, result));}}
-        if (j == rHeight/2) {if (!fixedObj.add(new Wall(cX-width/2, cY-height/2+1, Direction.North, result)) && connect) {fixedObj.remove(new Wall(cX-width/2, cY-height/2+1, Direction.North, result));}}
+        if (i%LIGHT_SPACING==0 && j%LIGHT_SPACING==0) {fixedObj.add(new Light(result.getTile(cX-width/2, cY-height/2), (rand.nextFloat() > BROKEN_LIGHT_CHANCE)));}
+        if (i == -(rWidth /2)) {
+          Wall w = new Wall(result.getTile(cX-width/2  , cY-height/2  ), Direction.West );
+          if (!fixedObj.add(w) && connect) {fixedObj.remove(w); RigidBody.removeBody(w.getRenderedBody());}
+        }
+        if (i ==   rWidth /2 ) {
+          Wall w = new Wall(result.getTile(cX-width/2+1, cY-height/2  ), Direction.West );
+          if (!fixedObj.add(w) && connect) {fixedObj.remove(w); RigidBody.removeBody(w.getRenderedBody());}
+        }
+        if (j == -(rHeight/2)) {
+          Wall w = new Wall(result.getTile(cX-width/2  , cY-height/2  ), Direction.North);
+          if (!fixedObj.add(w) && connect) {fixedObj.remove(w); RigidBody.removeBody(w.getRenderedBody());}
+        }
+        if (j ==   rHeight/2 ) {
+          Wall w = new Wall(result.getTile(cX-width/2  , cY-height/2+1), Direction.North);
+          if (!fixedObj.add(w) && connect) {fixedObj.remove(w); RigidBody.removeBody(w.getRenderedBody());}
+        }
       }
     }
     switch(dir) {
       case 0:
-      if (fixedObj.remove(new Wall(x-width/2, y-height/2, Direction.West, result))) {fixedObj.add(new Door(x-width/2, y-height/2, Direction.West, result));}
+      if (fixedObj.remove(new Wall(result.getTile(x-width/2, y-height/2), Direction.West))) {
+        fixedObj.add(new Door(result.getTile(x-width/2, y-height/2), Direction.West));
+      }
       break;
       case 1:
-      if (fixedObj.remove(new Wall(x-width/2, y-height/2, Direction.North, result))) {fixedObj.add(new Door(x-width/2, y-height/2, Direction.North, result));}
+      if (fixedObj.remove(new Wall(result.getTile(x-width/2, y-height/2), Direction.North))) {
+        fixedObj.add(new Door(result.getTile(x-width/2, y-height/2), Direction.North));
+      }
       break;
       case 2:
-      if (fixedObj.remove(new Wall(x-width/2+1, y-height/2, Direction.West, result))) {fixedObj.add(new Door(x-width/2+1, y-height/2, Direction.West, result));}
+      if (fixedObj.remove(new Wall(result.getTile(x-width/2+1, y-height/2), Direction.West))) {
+        fixedObj.add(new Door(result.getTile(x-width/2+1, y-height/2), Direction.West));
+      }
       break;
       case 3:
-      if (fixedObj.remove(new Wall(x-width/2, y-height/2+1, Direction.North, result))) {fixedObj.add(new Door(x-width/2, y-height/2+1, Direction.North, result));}
+      if (fixedObj.remove(new Wall(result.getTile(x-width/2, y-height/2+1), Direction.North))) {
+        fixedObj.add(new Door(result.getTile(x-width/2, y-height/2+1), Direction.North));
+      }
       break;
     }
 
